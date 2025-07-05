@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './app.css',
 })
 export class App {
-  condition = true;
+  condition = false;
   changeCondition(event: MouseEvent) {
     if (this.condition === true) {
       this.condition = false;
