@@ -1,0 +1,56 @@
+<h2>Můj Task Manager</h2>
+
+<!-- Input pro nový úkol -->
+<div class="add-task">
+  <input
+    #newTaskInput
+    type="text"
+    [(ngModel)]="newTask"
+    placeholder="Napiš úkol..."
+    (keyup.enter)="addTask()"
+  />
+  <button (click)="addTask()">+</button>
+</div>
+
+<!-- Filtry -->
+<div class="filters">
+  <button (click)="filter.set('all')">Vše</button>
+  <button (click)="filter.set('active')">Aktivní</button>
+  <button (click)="filter.set('completed')">Splněné</button>
+  <button (click)="clearCompleted()">Smazat splněné</button>
+</div>
+
+<!-- Seznam úkolů -->
+<ul>
+  @for (task of filteredTasks(); track task.id) {
+  <li>
+    <input
+      type="checkbox"
+      [checked]="task.completed"
+      (change)="toggleTask(task.id)"
+    />
+
+    <!-- Editovatelná část -->
+    @if (editingId() === task.id) {
+    <input
+      #editingu
+      type="text"
+      [value]="editingText"
+      (input)="editingText = editingu.value"
+      (blur)="saveEdit(task.id)"
+      (keyup.enter)="saveEdit(task.id)"
+      autofocus
+    />
+    } @else {
+    <span [class.completed]="task.completed" (dblclick)="startEdit(task)">
+      {{ task.text }}
+    </span>
+    }
+
+    <button (click)="removeTask(task.id)">🗑️</button>
+  </li>
+  }
+</ul>
+
+<!-- Počet zbývajících úkolů -->
+<p>Zbývá: {{ remainingCount() }} úkolů</p>
