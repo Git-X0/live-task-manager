@@ -1,56 +1,83 @@
-<h2>Můj Task Manager</h2>
+<div class="container">
+  <div class="glass-card">
+    <h2 class="header">Můj Task Manager ✨</h2>
 
-<!-- Input pro nový úkol -->
-<div class="add-task">
-  <input
-    #newTaskInput
-    type="text"
-    [(ngModel)]="newTask"
-    placeholder="Napiš úkol..."
-    (keyup.enter)="addTask()"
-  />
-  <button (click)="addTask()">+</button>
+    <div class="add-task">
+      <input
+        #newTaskInput
+        class="task-input"
+        type="text"
+        [(ngModel)]="newTask"
+        placeholder="Napiš úkol..."
+        (keyup.enter)="addTask()"
+      />
+      <button class="add-button" (click)="addTask()">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="filters">
+      <button (click)="filter.set('all')">Vše</button>
+      <button (click)="filter.set('active')">Aktivní</button>
+      <button (click)="filter.set('completed')">Splněné</button>
+      <button class="clear-button" (click)="clearCompleted()">
+        Smazat splněné
+      </button>
+    </div>
+
+    <!-- Seznam úkolů -->
+    <ul class="task-list">
+      @for (task of filteredTasks(); track task.id) {
+      <li
+        class="task-item"
+        [class.completed]="task.completed"
+        [attr.data-task-id]="task.id"
+      >
+        <input
+          type="checkbox"
+          [checked]="task.completed"
+          (change)="toggleTask(task.id)"
+        />
+
+        <!-- Editovatelná část -->
+        @if (editingId() === task.id) {
+        <input
+          #editingu
+          type="text"
+          [value]="editingText"
+          (input)="editingText = editingu.value"
+          (blur)="saveEdit(task.id)"
+          (keyup.enter)="saveEdit(task.id)"
+          autofocus
+        />
+        } @else {
+        <span [class.completed]="task.completed" (dblclick)="startEdit(task)">
+          {{ task.text }}
+        </span>
+        }
+
+        <button (click)="removeTask(task.id)">🗑️</button>
+      </li>
+      }
+    </ul>
+
+    <div class="footer">
+      <p class="remaining">
+        Zbývá: <strong>{{ remainingCount() }}</strong> úkolů
+      </p>
+      <div class="progress-bar">
+        <div class="progress" [style.width.%]="progress()"></div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<!-- Filtry -->
-<div class="filters">
-  <button (click)="filter.set('all')">Vše</button>
-  <button (click)="filter.set('active')">Aktivní</button>
-  <button (click)="filter.set('completed')">Splněné</button>
-  <button (click)="clearCompleted()">Smazat splněné</button>
-</div>
-
-<!-- Seznam úkolů -->
-<ul>
-  @for (task of filteredTasks(); track task.id) {
-  <li>
-    <input
-      type="checkbox"
-      [checked]="task.completed"
-      (change)="toggleTask(task.id)"
-    />
-
-    <!-- Editovatelná část -->
-    @if (editingId() === task.id) {
-    <input
-      #editingu
-      type="text"
-      [value]="editingText"
-      (input)="editingText = editingu.value"
-      (blur)="saveEdit(task.id)"
-      (keyup.enter)="saveEdit(task.id)"
-      autofocus
-    />
-    } @else {
-    <span [class.completed]="task.completed" (dblclick)="startEdit(task)">
-      {{ task.text }}
-    </span>
-    }
-
-    <button (click)="removeTask(task.id)">🗑️</button>
-  </li>
-  }
-</ul>
-
-<!-- Počet zbývajících úkolů -->
-<p>Zbývá: {{ remainingCount() }} úkolů</p>

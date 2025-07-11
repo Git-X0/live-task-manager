@@ -1,16 +1,19 @@
 import {
   Component,
+  OnInit,
   signal,
   computed,
+  effect,
   viewChild,
   ElementRef,
+  Inject,
+  PLATFORM_ID,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
-// Definice rozhraní pro úkol
 interface Task {
-  id: number;
+  id: string;
   text: string;
   completed: boolean;
 }
@@ -19,48 +22,15 @@ interface Task {
   selector: 'app-task-manager',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: `./task-manager.html`,
-  styles: [
-    `
-      .completed {
-        text-decoration: line-through;
-        color: #777;
-      }
-      ul {
-        list-style-type: none;
-        padding: 0;
-      }
-      li {
-        display: flex;
-        align-items: center;
-        margin: 8px 0;
-      }
-      button {
-        margin-left: 10px;
-        cursor: pointer;
-      }
-      .filters button {
-        margin-right: 5px;
-      }
-      input[type='text'] {
-        padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        margin-right: 5px;
-      }
-    `,
-  ],
+  templateUrl: './task-manager.html',
+  styleUrls: ['./task-manager.css'],
 })
-export class TaskManager {
+export class TaskManager implements OnInit {
   // Signály pro správu stavu
-  tasks = signal<Task[]>([
-    { id: 1, text: 'Naučit se Angular', completed: false },
-    { id: 2, text: 'Udělat kvíz', completed: true },
-  ]);
-
+  tasks = signal<Task[]>([]);
   filter = signal<'all' | 'active' | 'completed'>('all');
   newTask = '';
-  editingId = signal<number | null>(null);
+  editingId = signal<string | null>(null);
   editingText = '';
 
   // Reference na inputy
@@ -83,16 +53,45 @@ export class TaskManager {
     );
   });
 
+  // Progres dokončených úkolů
+  progress = computed(() => {
+    const total = this.tasks().length;
+    const completed = total - this.remainingCount();
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
+  });
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    // Efekt pro ukládání do localStorage - pouze v prohlížeči
+    if (isPlatformBrowser(this.platformId)) {
+      effect(() => {
+        localStorage.setItem('tasks', JSON.stringify(this.tasks()));
+      });
+    }
+  }
+
+  ngOnInit(): void {
+    // Načtení úkolů z localStorage - pouze v prohlížeči
+    if (isPlatformBrowser(this.platformId)) {
+      const savedTasks = localStorage.getItem('tasks');
+      if (savedTasks) {
+        this.tasks.set(JSON.parse(savedTasks));
+      }
+    }
+  }
+
   // Přidání nového úkolu
   addTask(): void {
     const taskText = this.newTask.trim();
     if (taskText) {
       this.tasks.update((tasks) => [
         ...tasks,
-        { id: Date.now(), text: taskText, completed: false },
+        {
+          id: Date.now().toString(),
+          text: taskText,
+          completed: false,
+        },
       ]);
       this.newTask = '';
-      // Focus na input po přidání
       setTimeout(() => {
         const input = this.newTaskInput();
         if (input) input.nativeElement.focus();
@@ -101,7 +100,7 @@ export class TaskManager {
   }
 
   // Přepnutí stavu úkolu
-  toggleTask(id: number): void {
+  toggleTask(id: string): void {
     this.tasks.update((tasks) =>
       tasks.map((task) =>
         task.id === id ? { ...task, completed: !task.completed } : task
@@ -109,16 +108,23 @@ export class TaskManager {
     );
   }
 
-  // Odstranění úkolu
-  removeTask(id: number): void {
-    this.tasks.update((tasks) => tasks.filter((task) => task.id !== id));
+  // Odstranění úkolu s animací
+  removeTask(id: string): void {
+    const taskElement = document.querySelector(`[data-task-id="${id}"]`);
+    if (taskElement) {
+      taskElement.classList.add('deleting');
+      setTimeout(() => {
+        this.tasks.update((tasks) => tasks.filter((task) => task.id !== id));
+      }, 500);
+    } else {
+      this.tasks.update((tasks) => tasks.filter((task) => task.id !== id));
+    }
   }
 
   // Spuštění editace
   startEdit(task: Task): void {
     this.editingId.set(task.id);
     this.editingText = task.text;
-    // Focus na edit input
     setTimeout(() => {
       const input = this.editInput();
       if (input) input.nativeElement.focus();
@@ -126,7 +132,7 @@ export class TaskManager {
   }
 
   // Uložení editace
-  saveEdit(id: number): void {
+  saveEdit(id: string): void {
     const newText = this.editingText.trim();
     if (newText) {
       this.tasks.update((tasks) =>
@@ -135,7 +141,6 @@ export class TaskManager {
         )
       );
     } else {
-      // Pokud je text prázdný, smaž úkol
       this.removeTask(id);
     }
     this.editingId.set(null);
@@ -143,6 +148,7 @@ export class TaskManager {
 
   // Smazání všech splněných úkolů
   clearCompleted(): void {
-    this.tasks.update((tasks) => tasks.filter((task) => !task.completed));
+    const completedTasks = this.tasks().filter((task) => task.completed);
+    completedTasks.forEach((task) => this.removeTask(task.id));
   }
 }

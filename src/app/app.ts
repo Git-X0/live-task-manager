@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TaskManager } from './task-manager/task-manager';
-import { PromoAngular } from './promo-angular/promo-angular';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TaskManager, PromoAngular, CommonModule],
+  imports: [RouterOutlet, TaskManager, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
