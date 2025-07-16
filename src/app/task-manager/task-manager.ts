@@ -51,6 +51,7 @@ export class TaskManager {
   selectedTaskCategory = signal<string | null>(null); // pro nový úkol
   newTaskDeadline = signal<string>('');
   deadlineFilter = signal<'all' | 'with' | 'without' | 'soon'>('all');
+  importError = signal<string | null>(null);
 
   // References to inputs
   @ViewChild('newTaskInput') newTaskInput!: ElementRef<HTMLInputElement>;
@@ -211,6 +212,67 @@ export class TaskManager {
     const now = Date.now();
     const deadline = new Date(task.deadline).getTime();
     return deadline > now && deadline - now <= 24 * 60 * 60 * 1000; // do 24h
+  }
+
+  exportData(): void {
+    const data = {
+      tasks: this.tasks(),
+      categories: this.categories(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'task-manager-export.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  importData(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string);
+        if (
+          !data ||
+          typeof data !== 'object' ||
+          !Array.isArray(data.tasks) ||
+          !Array.isArray(data.categories)
+        ) {
+          throw new Error('Neplatná struktura souboru.');
+        }
+        // Validace tasků
+        for (const t of data.tasks) {
+          if (
+            typeof t !== 'object' ||
+            typeof t.id !== 'string' ||
+            typeof t.text !== 'string' ||
+            typeof t.completed !== 'boolean'
+          ) {
+            throw new Error('Neplatný úkol v souboru.');
+          }
+        }
+        // Validace kategorií
+        for (const c of data.categories) {
+          if (typeof c !== 'string') {
+            throw new Error('Neplatná kategorie v souboru.');
+          }
+        }
+        this.tasks.set(data.tasks);
+        this.categories.set(data.categories);
+        this.importError.set(null);
+      } catch (e) {
+        this.importError.set((e as Error).message || 'Chyba při importu.');
+      }
+    };
+    reader.readAsText(file);
+    // Reset inputu, aby šel znovu vybrat stejný soubor
+    input.value = '';
   }
 
   private setBodyTheme(theme: 'light' | 'dark') {

@@ -314,3 +314,24 @@ body {
 .theme-toggle:hover {
   color: var(--progress);
 }
+
+/* Utility button for export/import */
+.utility-button {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 2px 8px 0 rgba(31, 38, 135, 0.08);
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+}
+.utility-button:hover {
+  background: var(--progress);
+  color: #fff;
+}

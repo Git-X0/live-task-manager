@@ -241,6 +241,28 @@
     </ul>
 
     <div class="footer pt-6 border-t border-t-black/5">
+      <div
+        style="
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+          margin-bottom: 1rem;
+        "
+      >
+        <button class="utility-button" (click)="exportData()">Export</button>
+        <label class="utility-button" style="cursor: pointer">
+          Import
+          <input
+            type="file"
+            accept="application/json"
+            (change)="importData($event)"
+            style="display: none"
+          />
+        </label>
+        <span *ngIf="importError()" style="color: #e57373; margin-left: 1rem"
+          >{{importError()}}</span
+        >
+      </div>
       <p
         class="remaining text-center text-[#5e35b1] text-xl font-semibold mb-4"
       >
