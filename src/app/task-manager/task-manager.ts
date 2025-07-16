@@ -21,6 +21,7 @@ interface Task {
   id: string;
   text: string;
   completed: boolean;
+  category?: string;
 }
 
 @Component({
@@ -42,6 +43,10 @@ export class TaskManager {
   editingId = signal<string | null>(null);
   editingText = signal('');
   theme = signal<'light' | 'dark'>('light');
+  categories = signal<string[]>([]);
+  newCategory = signal('');
+  selectedCategory = signal<string | null>(null); // pro filtraci
+  selectedTaskCategory = signal<string | null>(null); // pro nový úkol
 
   // References to inputs
   @ViewChild('newTaskInput') newTaskInput!: ElementRef<HTMLInputElement>;
@@ -53,11 +58,13 @@ export class TaskManager {
   );
   filteredTasks = computed<Task[]>(() => {
     const filter = this.filter();
+    const cat = this.selectedCategory();
     return this.tasks().filter(
       (task) =>
-        filter === 'all' ||
-        (filter === 'completed' && task.completed) ||
-        (filter === 'active' && !task.completed)
+        (filter === 'all' ||
+          (filter === 'completed' && task.completed) ||
+          (filter === 'active' && !task.completed)) &&
+        (!cat || task.category === cat)
     );
   });
   progress = computed(() => {
@@ -92,6 +99,7 @@ export class TaskManager {
   // Add new task
   addTask(): void {
     const taskText = this.newTask().trim();
+    const category = this.selectedTaskCategory();
     if (taskText) {
       this.tasks.update((tasks) => [
         ...tasks,
@@ -99,11 +107,15 @@ export class TaskManager {
           id: Date.now().toString(),
           text: taskText,
           completed: false,
+          ...(category ? { category } : {}),
         },
       ]);
       this.newTask.set('');
+      this.selectedTaskCategory.set(null);
       setTimeout(() => {
-        if (this.newTaskInput) this.newTaskInput.nativeElement.focus();
+        if (this.newTaskInput?.nativeElement) {
+          this.newTaskInput.nativeElement.focus();
+        }
       }, 0);
     }
   }
@@ -166,6 +178,14 @@ export class TaskManager {
 
   toggleTheme(): void {
     this.theme.update((t) => (t === 'light' ? 'dark' : 'light'));
+  }
+
+  addCategory(): void {
+    const cat = this.newCategory().trim();
+    if (cat && !this.categories().includes(cat)) {
+      this.categories.update((cats) => [...cats, cat]);
+      this.newCategory.set('');
+    }
   }
 
   private setBodyTheme(theme: 'light' | 'dark') {

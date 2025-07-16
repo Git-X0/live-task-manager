@@ -47,20 +47,51 @@
       ></span>
     </h2>
 
-    <div class="add-task flex gap-4 mb-8">
+    <div
+      class="category-manager"
+      style="
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      "
+    >
+      <input
+        class="category-input"
+        type="text"
+        placeholder="Nová kategorie..."
+        [value]="newCategory()"
+        (input)="newCategory.set($any($event.target).value)"
+        (keyup.enter)="addCategory()"
+        style="flex: 1"
+      />
+      <button class="add-button" (click)="addCategory()">
+        Přidat kategorii
+      </button>
+    </div>
+
+    <div class="add-task">
       <input
         #newTaskInput
+        class="task-input"
+        type="text"
+        placeholder="Napiš úkol..."
         [value]="newTask()"
         (input)="newTask.set($any($event.target).value)"
         (keyup.enter)="addTask()"
-        class="task-input flex-1 p-5 rounded-xl bg-white/70 shadow-md text-lg transition-all duration-300 focus:shadow-lg focus:bg-white focus:translate-y-[-2px]"
-        type="text"
-        placeholder="Napiš úkol..."
       />
-      <button
-        class="add-button bg-gradient-to-br from-[#6e8efb] to-[#a777e3] text-white rounded-xl w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
-        (click)="addTask()"
+      <select
+        class="category-select"
+        [value]="selectedTaskCategory() ?? ''"
+        (change)="selectedTaskCategory.set($any($event.target).value || null)"
+        style="margin-left: 0.5rem"
       >
+        <option value="">Bez kategorie</option>
+        @for (cat of categories(); track cat) {
+        <option [value]="cat">{{cat}}</option>
+        }
+      </select>
+      <button class="add-button" (click)="addTask()">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -68,7 +99,6 @@
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          stroke-width="3"
           stroke-width="3"
         >
           <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -93,6 +123,17 @@
       >
         Splněné
       </button>
+      <select
+        class="category-select"
+        [value]="selectedCategory() ?? ''"
+        (change)="selectedCategory.set($any($event.target).value || null)"
+        style="margin-left: 0.5rem"
+      >
+        <option value="">Všechny kategorie</option>
+        @for (cat of categories(); track cat) {
+        <option [value]="cat">{{cat}}</option>
+        }
+      </select>
       <button class="clear-button" (click)="clearCompleted()">
         Smazat splněné
       </button>
@@ -101,7 +142,7 @@
     <ul class="task-list" cdkDropList (cdkDropListDropped)="drop($event)">
       @for (task of filteredTasks(); track task.id) {
       <li
-        class="task-item relative p-6 bg-white rounded-2xl mb-4 shadow-md transition-all duration-300 hover:translate-y-[-5px] hover:shadow-lg"
+        class="task-item"
         [class.completed]="task.completed"
         [attr.data-task-id]="task.id"
         cdkDrag
@@ -129,7 +170,20 @@
         />
         } @else {
         <span class="task-text" (dblclick)="startEdit(task)">
-          {{ task.text }}
+          {{ task.text }} @if (task.category) {
+          <span
+            class="task-category"
+            style="
+              margin-left: 0.5rem;
+              font-size: 0.9em;
+              color: var(--header);
+              background: var(--task-completed);
+              border-radius: 4px;
+              padding: 0.1em 0.5em;
+            "
+            >{{task.category}}</span
+          >
+          }
         </span>
         }
 
