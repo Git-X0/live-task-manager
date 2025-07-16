@@ -47,27 +47,16 @@
       ></span>
     </h2>
 
-    <div
-      class="category-manager"
-      style="
-        margin-bottom: 1rem;
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-      "
-    >
+    <div class="category-manager">
       <input
-        class="category-input"
+        class="category-input task-input"
         type="text"
         placeholder="Nová kategorie..."
         [value]="newCategory()"
         (input)="newCategory.set($any($event.target).value)"
         (keyup.enter)="addCategory()"
-        style="flex: 1"
       />
-      <button class="add-button" (click)="addCategory()">
-        Přidat kategorii
-      </button>
+      <button class="add-button" (click)="addCategory()">+</button>
     </div>
 
     <div class="add-task">

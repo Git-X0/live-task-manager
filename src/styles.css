@@ -43,27 +43,60 @@ body {
   background: var(--background);
 }
 
+/* --- Layout fixy pro Task Manager --- */
 .glass-card {
+  overflow: hidden;
+  position: relative;
+}
+
+.category-manager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
   width: 100%;
-  max-width: 420px;
   min-width: 0;
-  margin: 2rem auto;
-  padding: 2rem 1rem;
+  box-sizing: border-box;
 }
 
-@media (min-width: 600px) {
-  .glass-card {
-    max-width: 540px;
-    padding: 2rem 2.5rem;
-  }
+.category-input {
+  flex: 1 1 180px;
+  min-width: 0;
+  max-width: 220px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-@media (min-width: 900px) {
+.category-manager .add-button {
+  flex-shrink: 0;
+  max-width: 120px;
+  white-space: nowrap;
+  padding: 0.7rem 1rem;
+  margin-left: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 700px) {
   .glass-card {
-    max-width: 700px;
-    padding: 2.5rem 3.5rem;
+    max-width: 98vw;
+    min-width: 0;
+    padding: 1rem;
+  }
+  .category-manager {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .category-manager .add-button {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+  }
+  .category-input {
+    max-width: none;
   }
 }
+/* --- Konec layout fixů --- */
 
 .header {
   color: var(--header);
@@ -73,18 +106,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.theme-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-left: 1rem;
-  color: var(--header);
-  transition: color 0.2s;
-}
-.theme-toggle:hover {
-  color: var(--progress);
 }
 
 .add-task {
@@ -262,4 +283,34 @@ body {
   background: var(--progress);
   height: 100%;
   transition: width 0.3s;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.category-select {
+  min-width: 120px;
+  max-width: 180px;
+  width: auto;
+  padding: 0.5em 1em;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 1rem;
+  color: var(--header);
+  transition: color 0.2s;
+}
+.theme-toggle:hover {
+  color: var(--progress);
 }
