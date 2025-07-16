@@ -1,24 +1,37 @@
-<div class="container">
-  <div class="glass-card">
-    <h2 class="header">Můj Task Manager ✨</h2>
+<div class="container max-w-3xl mx-auto">
+  <div
+    class="glass-card bg-white/85 backdrop-blur-lg rounded-2xl p-8 shadow-xl border border-white/40"
+  >
+    <h2
+      class="header text-center mb-8 text-[#5e35b1] font-bold text-3xl relative pb-3"
+    >
+      Můj Task Manager ✨
+      <span
+        class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-[#6e8efb] to-[#a777e3] rounded-full"
+      ></span>
+    </h2>
 
-    <div class="add-task">
+    <div class="add-task flex gap-4 mb-8">
       <input
         #newTaskInput
-        class="task-input"
+        [formControl]="newTaskControl"
+        class="task-input flex-1 p-5 rounded-xl bg-white/70 shadow-md text-lg transition-all duration-300 focus:shadow-lg focus:bg-white focus:translate-y-[-2px]"
         type="text"
-        [(ngModel)]="newTask"
         placeholder="Napiš úkol..."
         (keyup.enter)="addTask()"
       />
-      <button class="add-button" (click)="addTask()">
+      <button
+        class="add-button bg-gradient-to-br from-[#6e8efb] to-[#a777e3] text-white rounded-xl w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+        (click)="addTask()"
+      >
         <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="30"
+          height="30"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          stroke-width="3"
         >
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -26,57 +39,137 @@
       </button>
     </div>
 
-    <div class="filters">
-      <button (click)="filter.set('all')">Vše</button>
-      <button (click)="filter.set('active')">Aktivní</button>
-      <button (click)="filter.set('completed')">Splněné</button>
-      <button class="clear-button" (click)="clearCompleted()">
+    <div class="filters flex gap-4 mb-6 flex-wrap">
+      <button
+        [class.active-filter]="filter() === 'all'"
+        class="filter-button px-5 py-3 bg-white/70 rounded-full font-semibold shadow-md transition-all duration-300 hover:bg-white/90 hover:translate-y-[-3px] hover:shadow-lg"
+        (click)="filter.set('all')"
+      >
+        Vše
+      </button>
+      <button
+        [class.active-filter]="filter() === 'active'"
+        class="filter-button px-5 py-3 bg-white/70 rounded-full font-semibold shadow-md transition-all duration-300 hover:bg-white/90 hover:translate-y-[-3px] hover:shadow-lg"
+        (click)="filter.set('active')"
+      >
+        Aktivní
+      </button>
+      <button
+        [class.active-filter]="filter() === 'completed'"
+        class="filter-button px-5 py-3 bg-white/70 rounded-full font-semibold shadow-md transition-all duration-300 hover:bg-white/90 hover:translate-y-[-3px] hover:shadow-lg"
+        (click)="filter.set('completed')"
+      >
+        Splněné
+      </button>
+      <button
+        class="clear-button ml-auto bg-[rgba(255,107,129,0.15)] text-[#ff6b81] font-bold hover:bg-[rgba(255,107,129,0.25)] px-5 py-3 rounded-full transition-all duration-300"
+        (click)="clearCompleted()"
+      >
         Smazat splněné
       </button>
     </div>
 
-    <!-- Seznam úkolů -->
     <ul class="task-list">
       @for (task of filteredTasks(); track task.id) {
       <li
-        class="task-item"
+        class="task-item relative p-6 bg-white rounded-2xl mb-4 shadow-md transition-all duration-300 hover:translate-y-[-5px] hover:shadow-lg"
         [class.completed]="task.completed"
         [attr.data-task-id]="task.id"
       >
-        <input
-          type="checkbox"
-          [checked]="task.completed"
-          (change)="toggleTask(task.id)"
-        />
+        <label class="custom-checkbox mr-5 cursor-pointer">
+          <input
+            type="checkbox"
+            [checked]="task.completed"
+            (change)="toggleTask(task.id)"
+            class="absolute opacity-0"
+          />
+          <span
+            class="checkmark block w-7 h-7 bg-[#f0f0f0] rounded-lg border-2 border-[#ddd] shadow-sm"
+          ></span>
+        </label>
 
-        <!-- Editovatelná část -->
         @if (editingId() === task.id) {
         <input
           #editingu
+          class="edit-input flex-1 py-3 px-4 border-2 border-[#a777e3] rounded-xl bg-white/90 shadow-md transition-all duration-300 focus:shadow-lg focus:translate-y-[-2px]"
           type="text"
-          [value]="editingText"
-          (input)="editingText = editingu.value"
+          [value]="editingText()"
+          (input)="editingText.set($any($event.target).value)"
           (blur)="saveEdit(task.id)"
           (keyup.enter)="saveEdit(task.id)"
           autofocus
         />
         } @else {
-        <span [class.completed]="task.completed" (dblclick)="startEdit(task)">
+        <span
+          class="task-text flex-1 text-xl font-medium text-[#333]"
+          (dblclick)="startEdit(task)"
+        >
           {{ task.text }}
         </span>
         }
 
-        <button (click)="removeTask(task.id)">🗑️</button>
+        <button
+          class="delete-button text-[#ff6b81] p-3 rounded-xl transition-all duration-300"
+          (click)="removeTask(task.id)"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path
+              d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+            ></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </button>
+      </li>
+      } @empty {
+      <li
+        class="empty-state text-center p-12 bg-white/50 rounded-2xl text-[#666] shadow-inner"
+      >
+        <svg
+          class="mx-auto mb-5 stroke-[#a777e3] drop-shadow-md"
+          width="48"
+          height="48"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p class="text-xl font-semibold text-[#5e35b1]">
+          Žádné úkoly k zobrazení
+        </p>
+        <small>Začněte přidáním nového úkolu</small>
       </li>
       }
     </ul>
 
-    <div class="footer">
-      <p class="remaining">
-        Zbývá: <strong>{{ remainingCount() }}</strong> úkolů
+    <div class="footer pt-6 border-t border-t-black/5">
+      <p
+        class="remaining text-center text-[#5e35b1] text-xl font-semibold mb-4"
+      >
+        Zbývá:
+        <strong
+          class="font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#6e8efb] to-[#a777e3]"
+          >{{ remainingCount() }}</strong
+        >
+        úkolů
       </p>
-      <div class="progress-bar">
-        <div class="progress" [style.width.%]="progress()"></div>
+      <div
+        class="progress-bar h-3 bg-black/5 rounded-xl overflow-hidden shadow-inner"
+      >
+        <div
+          class="progress h-full bg-gradient-to-r from-[#6e8efb] to-[#a777e3] rounded-xl transition-all duration-500"
+          [style.width.%]="progress()"
+        ></div>
       </div>
     </div>
   </div>

@@ -1,16 +1,18 @@
 import {
   Component,
   OnInit,
-  signal,
   computed,
   effect,
+  signal,
   viewChild,
   ElementRef,
-  Inject,
+  ChangeDetectionStrategy,
+  inject,
   PLATFORM_ID,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 interface Task {
   id: string;
@@ -21,29 +23,48 @@ interface Task {
 @Component({
   selector: 'app-task-manager',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './task-manager.html',
-  styleUrls: ['./task-manager.css'],
+  styleUrl: './task-manager.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class:
+      'block min-h-screen bg-gradient-to-br from-[#6e8efb] to-[#a777e3] p-5 font-[Poppins]',
+  },
 })
-export class TaskManager implements OnInit {
-  // Signály pro správu stavu
-  tasks = signal<Task[]>([]);
-  filter = signal<'all' | 'active' | 'completed'>('all');
-  newTask = '';
-  editingId = signal<string | null>(null);
-  editingText = '';
+export class TaskManagerComponent implements OnInit {
+  // Dependency injection
+  private readonly platformId = inject(PLATFORM_ID);
 
-  // Reference na inputy
-  newTaskInput = viewChild<ElementRef>('newTaskInput');
-  editInput = viewChild<ElementRef>('editInput');
+  // State signals
+  readonly tasks = signal<Task[]>([]);
+  readonly filter = signal<'all' | 'active' | 'completed'>('all');
+  readonly editingId = signal<string | null>(null);
+  readonly editingText = signal('');
 
-  // Počet nekompletních úkolů
-  remainingCount = computed(
+  // Form controls
+  readonly newTaskControl = new FormControl('', {
+    nonNullable: true,
+    validators: Validators.required,
+  });
+
+  // Template references
+  readonly newTaskInput = viewChild<ElementRef>('newTaskInput');
+  readonly editInput = viewChild<ElementRef>('editInput');
+
+  // Computed values
+  readonly remainingCount = computed(
     () => this.tasks().filter((task) => !task.completed).length
   );
 
-  // Filtrované úkoly
-  filteredTasks = computed<Task[]>(() => {
+  readonly progress = computed(() => {
+    const total = this.tasks().length;
+    return total > 0
+      ? Math.round(((total - this.remainingCount()) / total) * 100)
+      : 0;
+  });
+
+  readonly filteredTasks = computed(() => {
     const filter = this.filter();
     return this.tasks().filter(
       (task) =>
@@ -53,53 +74,48 @@ export class TaskManager implements OnInit {
     );
   });
 
-  // Progres dokončených úkolů
-  progress = computed(() => {
-    const total = this.tasks().length;
-    const completed = total - this.remainingCount();
-    return total > 0 ? Math.round((completed / total) * 100) : 0;
-  });
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    // Efekt pro ukládání do localStorage - pouze v prohlížeči
+  constructor() {
+    // Auto-save to localStorage
     if (isPlatformBrowser(this.platformId)) {
       effect(() => {
         localStorage.setItem('tasks', JSON.stringify(this.tasks()));
       });
     }
+
+    // Clear completed tasks handler
+    this.newTaskControl.valueChanges.pipe(takeUntilDestroyed()).subscribe();
   }
 
   ngOnInit(): void {
-    // Načtení úkolů z localStorage - pouze v prohlížeči
     if (isPlatformBrowser(this.platformId)) {
       const savedTasks = localStorage.getItem('tasks');
-      if (savedTasks) {
-        this.tasks.set(JSON.parse(savedTasks));
-      }
+      if (savedTasks) this.tasks.set(JSON.parse(savedTasks));
     }
   }
 
-  // Přidání nového úkolu
+  getTaskClasses(task: Task) {
+    return {
+      completed: task.completed,
+    };
+  }
+
   addTask(): void {
-    const taskText = this.newTask.trim();
-    if (taskText) {
-      this.tasks.update((tasks) => [
-        ...tasks,
-        {
-          id: Date.now().toString(),
-          text: taskText,
-          completed: false,
-        },
-      ]);
-      this.newTask = '';
-      setTimeout(() => {
-        const input = this.newTaskInput();
-        if (input) input.nativeElement.focus();
-      }, 0);
-    }
+    const taskText = this.newTaskControl.value.trim();
+    if (!taskText || this.newTaskControl.invalid) return;
+
+    this.tasks.update((tasks) => [
+      ...tasks,
+      {
+        id: Date.now().toString(),
+        text: taskText,
+        completed: false,
+      },
+    ]);
+
+    this.newTaskControl.reset();
+    setTimeout(() => this.newTaskInput()?.nativeElement.focus(), 0);
   }
 
-  // Přepnutí stavu úkolu
   toggleTask(id: string): void {
     this.tasks.update((tasks) =>
       tasks.map((task) =>
@@ -108,7 +124,6 @@ export class TaskManager implements OnInit {
     );
   }
 
-  // Odstranění úkolu s animací
   removeTask(id: string): void {
     const taskElement = document.querySelector(`[data-task-id="${id}"]`);
     if (taskElement) {
@@ -121,34 +136,27 @@ export class TaskManager implements OnInit {
     }
   }
 
-  // Spuštění editace
   startEdit(task: Task): void {
     this.editingId.set(task.id);
-    this.editingText = task.text;
-    setTimeout(() => {
-      const input = this.editInput();
-      if (input) input.nativeElement.focus();
-    }, 0);
+    this.editingText.set(task.text);
+    setTimeout(() => this.editInput()?.nativeElement.focus(), 0);
   }
 
-  // Uložení editace
   saveEdit(id: string): void {
-    const newText = this.editingText.trim();
-    if (newText) {
+    const newText = this.editingText().trim();
+    if (!newText) {
+      this.removeTask(id);
+    } else {
       this.tasks.update((tasks) =>
         tasks.map((task) =>
           task.id === id ? { ...task, text: newText } : task
         )
       );
-    } else {
-      this.removeTask(id);
     }
     this.editingId.set(null);
   }
 
-  // Smazání všech splněných úkolů
   clearCompleted(): void {
-    const completedTasks = this.tasks().filter((task) => task.completed);
-    completedTasks.forEach((task) => this.removeTask(task.id));
+    this.tasks.update((tasks) => tasks.filter((task) => !task.completed));
   }
 }
