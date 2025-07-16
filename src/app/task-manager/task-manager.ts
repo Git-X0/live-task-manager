@@ -4,9 +4,11 @@ import {
   signal,
   computed,
   effect,
+  signal,
   viewChild,
   ElementRef,
-  Inject,
+  ChangeDetectionStrategy,
+  inject,
   PLATFORM_ID,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -74,9 +76,7 @@ export class TaskManager {
     // Load tasks from localStorage (browser only)
     if (isPlatformBrowser(this.platformId)) {
       const savedTasks = localStorage.getItem('tasks');
-      if (savedTasks) {
-        this.tasks.set(JSON.parse(savedTasks));
-      }
+      if (savedTasks) this.tasks.set(JSON.parse(savedTasks));
     }
   }
 
@@ -141,8 +141,6 @@ export class TaskManager {
           task.id === id ? { ...task, text: newText } : task
         )
       );
-    } else {
-      this.removeTask(id);
     }
     this.editingId.set(null);
   }

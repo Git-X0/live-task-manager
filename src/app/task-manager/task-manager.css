@@ -6,7 +6,6 @@
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   border-radius: 25px;
   padding: 40px;
@@ -200,10 +199,11 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.custom-checkbox:hover .checkmark {
-  transform: scale(1.1);
-  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
-  border-color: #a777e3;
+.filter-button:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .checkbox-input:checked ~ .checkmark {
@@ -216,6 +216,7 @@
   content: "";
   position: absolute;
   display: none;
+  left: 9px;
   left: 9px;
   top: 5px;
   width: 6px;
@@ -389,7 +390,6 @@
   }
 }
 
-/* Animace pro mazání */
 @keyframes slideOut {
   to {
     opacity: 0;
@@ -401,7 +401,6 @@
   animation: slideOut 0.5s ease forwards;
 }
 
-/* Animace pro zaškrtnutí */
 @keyframes pulse {
   0% {
     transform: scale(1);
@@ -418,14 +417,13 @@
   animation: pulse 0.5s ease;
 }
 
-/* Responsivní design */
 @media (max-width: 768px) {
   .glass-card {
-    padding: 25px;
+    padding: 1.5rem;
   }
 
   .header {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .task-input {
@@ -463,7 +461,7 @@
 
   .add-button {
     width: 100%;
-    height: 55px;
+    height: 3.5rem;
   }
 
   .task-item {

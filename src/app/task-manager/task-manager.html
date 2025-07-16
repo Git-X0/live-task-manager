@@ -1,18 +1,31 @@
-<div class="container">
-  <div class="glass-card">
-    <h2 class="header">Můj Task Manager ✨</h2>
+<div class="container max-w-3xl mx-auto">
+  <div
+    class="glass-card bg-white/85 backdrop-blur-lg rounded-2xl p-8 shadow-xl border border-white/40"
+  >
+    <h2
+      class="header text-center mb-8 text-[#5e35b1] font-bold text-3xl relative pb-3"
+    >
+      Můj Task Manager ✨
+      <span
+        class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-[#6e8efb] to-[#a777e3] rounded-full"
+      ></span>
+    </h2>
 
-    <div class="add-task">
+    <div class="add-task flex gap-4 mb-8">
       <input
         #newTaskInput
-        class="task-input"
+        [formControl]="newTaskControl"
+        class="task-input flex-1 p-5 rounded-xl bg-white/70 shadow-md text-lg transition-all duration-300 focus:shadow-lg focus:bg-white focus:translate-y-[-2px]"
         type="text"
         placeholder="Napiš úkol..."
         [value]="newTask()"
         (input)="newTask.set($any($event.target).value)"
         (keyup.enter)="addTask()"
       />
-      <button class="add-button" (click)="addTask()">
+      <button
+        class="add-button bg-gradient-to-br from-[#6e8efb] to-[#a777e3] text-white rounded-xl w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+        (click)="addTask()"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -20,6 +33,7 @@
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
+          stroke-width="3"
           stroke-width="3"
         >
           <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -52,7 +66,7 @@
     <ul class="task-list" cdkDropList (cdkDropListDropped)="drop($event)">
       @for (task of filteredTasks(); track task.id) {
       <li
-        class="task-item"
+        class="task-item relative p-6 bg-white rounded-2xl mb-4 shadow-md transition-all duration-300 hover:translate-y-[-5px] hover:shadow-lg"
         [class.completed]="task.completed"
         [attr.data-task-id]="task.id"
         cdkDrag
@@ -72,6 +86,8 @@
           #editInput
           class="edit-input"
           type="text"
+          [value]="editingText()"
+          (input)="editingText.set($any($event.target).value)"
           [value]="editingText()"
           (input)="editingText.set($any($event.target).value)"
           (blur)="saveEdit(task.id)"
@@ -116,12 +132,24 @@
       }
     </ul>
 
-    <div class="footer">
-      <p class="remaining">
-        Zbývá: <strong>{{ remainingCount() }}</strong> úkolů
+    <div class="footer pt-6 border-t border-t-black/5">
+      <p
+        class="remaining text-center text-[#5e35b1] text-xl font-semibold mb-4"
+      >
+        Zbývá:
+        <strong
+          class="font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#6e8efb] to-[#a777e3]"
+          >{{ remainingCount() }}</strong
+        >
+        úkolů
       </p>
-      <div class="progress-bar">
-        <div class="progress" [style.width.%]="progress()"></div>
+      <div
+        class="progress-bar h-3 bg-black/5 rounded-xl overflow-hidden shadow-inner"
+      >
+        <div
+          class="progress h-full bg-gradient-to-r from-[#6e8efb] to-[#a777e3] rounded-xl transition-all duration-500"
+          [style.width.%]="progress()"
+        ></div>
       </div>
     </div>
   </div>
