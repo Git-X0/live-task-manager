@@ -8,6 +8,7 @@ import {
   PLATFORM_ID,
   ViewChild,
   ElementRef,
+  Inject,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
@@ -40,6 +41,7 @@ export class TaskManager {
   newTask = signal('');
   editingId = signal<string | null>(null);
   editingText = signal('');
+  theme = signal<'light' | 'dark'>('light');
 
   // References to inputs
   @ViewChild('newTaskInput') newTaskInput!: ElementRef<HTMLInputElement>;
@@ -64,9 +66,7 @@ export class TaskManager {
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   });
 
-  private platformId = inject(PLATFORM_ID);
-
-  constructor() {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     // Effect for saving to localStorage (browser only)
     if (isPlatformBrowser(this.platformId)) {
       effect(() => {
@@ -75,6 +75,17 @@ export class TaskManager {
       // Load tasks from localStorage (browser only)
       const savedTasks = localStorage.getItem('tasks');
       if (savedTasks) this.tasks.set(JSON.parse(savedTasks));
+
+      // Dark mode preference
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark' || savedTheme === 'light') {
+        this.theme.set(savedTheme);
+      }
+      this.setBodyTheme(this.theme());
+      effect(() => {
+        localStorage.setItem('theme', this.theme());
+        this.setBodyTheme(this.theme());
+      });
     }
   }
 
@@ -151,5 +162,15 @@ export class TaskManager {
       const rest = tasks.filter((t) => !ids.includes(t.id));
       return [...current, ...rest];
     });
+  }
+
+  toggleTheme(): void {
+    this.theme.update((t) => (t === 'light' ? 'dark' : 'light'));
+  }
+
+  private setBodyTheme(theme: 'light' | 'dark') {
+    if (typeof document !== 'undefined') {
+      document.body.setAttribute('data-theme', theme);
+    }
   }
 }
