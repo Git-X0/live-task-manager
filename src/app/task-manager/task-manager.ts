@@ -22,6 +22,8 @@ interface Task {
   text: string;
   completed: boolean;
   category?: string;
+  createdAt: string;
+  deadline?: string;
 }
 
 @Component({
@@ -47,6 +49,8 @@ export class TaskManager {
   newCategory = signal('');
   selectedCategory = signal<string | null>(null); // pro filtraci
   selectedTaskCategory = signal<string | null>(null); // pro nový úkol
+  newTaskDeadline = signal<string>('');
+  deadlineFilter = signal<'all' | 'with' | 'without' | 'soon'>('all');
 
   // References to inputs
   @ViewChild('newTaskInput') newTaskInput!: ElementRef<HTMLInputElement>;
@@ -59,12 +63,17 @@ export class TaskManager {
   filteredTasks = computed<Task[]>(() => {
     const filter = this.filter();
     const cat = this.selectedCategory();
+    const deadlineFilter = this.deadlineFilter();
     return this.tasks().filter(
       (task) =>
         (filter === 'all' ||
           (filter === 'completed' && task.completed) ||
           (filter === 'active' && !task.completed)) &&
-        (!cat || task.category === cat)
+        (!cat || task.category === cat) &&
+        (deadlineFilter === 'all' ||
+          (deadlineFilter === 'with' && !!task.deadline) ||
+          (deadlineFilter === 'without' && !task.deadline) ||
+          (deadlineFilter === 'soon' && this.isDeadlineSoon(task)))
     );
   });
   progress = computed(() => {
@@ -100,6 +109,7 @@ export class TaskManager {
   addTask(): void {
     const taskText = this.newTask().trim();
     const category = this.selectedTaskCategory();
+    const deadline = this.newTaskDeadline().trim();
     if (taskText) {
       this.tasks.update((tasks) => [
         ...tasks,
@@ -108,10 +118,13 @@ export class TaskManager {
           text: taskText,
           completed: false,
           ...(category ? { category } : {}),
+          createdAt: new Date().toISOString(),
+          ...(deadline ? { deadline } : {}),
         },
       ]);
       this.newTask.set('');
       this.selectedTaskCategory.set(null);
+      this.newTaskDeadline.set('');
       setTimeout(() => {
         if (this.newTaskInput?.nativeElement) {
           this.newTaskInput.nativeElement.focus();
@@ -186,6 +199,18 @@ export class TaskManager {
       this.categories.update((cats) => [...cats, cat]);
       this.newCategory.set('');
     }
+  }
+
+  isDeadlineOver(task: Task): boolean {
+    if (!task.deadline || task.completed) return false;
+    return new Date(task.deadline).getTime() < Date.now();
+  }
+
+  isDeadlineSoon(task: Task): boolean {
+    if (!task.deadline || task.completed) return false;
+    const now = Date.now();
+    const deadline = new Date(task.deadline).getTime();
+    return deadline > now && deadline - now <= 24 * 60 * 60 * 1000; // do 24h
   }
 
   private setBodyTheme(theme: 'light' | 'dark') {
