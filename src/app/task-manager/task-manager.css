@@ -1,27 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
-/* Základní reset a globální styly */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-:host {
-  display: block;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #6e8efb, #a777e3);
-  padding: 20px;
-  font-family: "Poppins", sans-serif; /* Moderní bezpatkové písmo */
-}
-
+/* Základní styly */
 .container {
   max-width: 800px;
   margin: 0 auto;
+  padding: 20px;
 }
 
-/* Glassmorphism efekt */
 .glass-card {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
@@ -39,10 +22,6 @@
   font-size: 2.5rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
-  display: inline-block;
-  width: 100%;
-  font-family: "Poppins", sans-serif;
-  letter-spacing: -0.5px;
 }
 
 .header::after {
@@ -71,10 +50,9 @@
   background: rgba(255, 255, 255, 0.7);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   font-size: 1.1rem;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s ease;
   font-weight: 500;
   color: #444;
-  font-family: "Poppins", sans-serif;
 }
 
 .task-input:focus {
@@ -84,7 +62,6 @@
   transform: translateY(-2px);
 }
 
-/* TLAČÍTKO PŘIDÁNÍ ÚKOLU - VYLEPŠENÝ STYL */
 .add-button {
   background: linear-gradient(135deg, #6e8efb, #a777e3);
   color: white;
@@ -97,51 +74,15 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 5px 20px rgba(110, 142, 251, 0.4);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.3s ease;
   font-size: 2.5rem;
   position: relative;
   overflow: hidden;
 }
 
-.add-button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  transition: 0.6s;
-}
-
-.add-button:hover::before {
-  left: 100%;
-}
-
 .add-button:hover {
   transform: translateY(-5px) scale(1.05);
   box-shadow: 0 8px 25px rgba(110, 142, 251, 0.6);
-}
-
-.add-button:active {
-  transform: translateY(0) scale(0.95);
-}
-
-.add-button svg {
-  width: 30px;
-  height: 30px;
-  stroke: white;
-  stroke-width: 3;
-  transition: all 0.3s ease;
-}
-
-.add-button:hover svg {
-  transform: rotate(90deg);
 }
 
 .filters {
@@ -162,28 +103,6 @@
   color: #555;
   font-size: 1rem;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-  position: relative;
-  overflow: hidden;
-  font-family: "Poppins", sans-serif;
-}
-
-.filters button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 0.4s ease;
-  z-index: 1;
-}
-
-.filters button:hover::before {
-  transform: scaleX(1);
-  transform-origin: left;
 }
 
 .filters button.active {
@@ -196,7 +115,6 @@
 .filters button:hover:not(.active) {
   background: rgba(255, 255, 255, 0.9);
   transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .clear-button {
@@ -214,18 +132,18 @@
 .task-list {
   list-style: none;
   margin-bottom: 30px;
+  padding: 0;
 }
 
 .task-item {
   display: flex;
   align-items: center;
-  padding: 20px 25px;
+  padding: 20px;
   background: white;
   border-radius: 18px;
   margin-bottom: 15px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  animation: fadeIn 0.5s ease-out;
+  transition: all 0.4s ease;
   position: relative;
   overflow: hidden;
 }
@@ -245,19 +163,8 @@
   width: 8px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .task-item:hover {
-  transform: translateY(-5px) scale(1.02);
+  transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
@@ -265,7 +172,6 @@
   background: rgba(245, 245, 245, 0.7);
 }
 
-/* ZAŠKRTÁVACÍ POLÍČKO - VYLEPŠENÝ STYL */
 .custom-checkbox {
   display: block;
   position: relative;
@@ -274,7 +180,7 @@
   z-index: 2;
 }
 
-.custom-checkbox input {
+.checkbox-input {
   position: absolute;
   opacity: 0;
   cursor: pointer;
@@ -284,13 +190,14 @@
 
 .checkmark {
   position: relative;
-  height: 30px;
-  width: 30px;
+  display: block;
+  width: 28px;
+  height: 28px;
   background-color: #f0f0f0;
-  border-radius: 10px;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  transition: all 0.4s ease;
   border: 2px solid #ddd;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .custom-checkbox:hover .checkmark {
@@ -299,7 +206,7 @@
   border-color: #a777e3;
 }
 
-.custom-checkbox input:checked ~ .checkmark {
+.checkbox-input:checked ~ .checkmark {
   background: linear-gradient(135deg, #6e8efb, #a777e3);
   transform: scale(1.1);
   border-color: transparent;
@@ -309,18 +216,18 @@
   content: "";
   position: absolute;
   display: none;
-  left: 10px;
+  left: 9px;
   top: 5px;
-  width: 7px;
-  height: 14px;
+  width: 6px;
+  height: 12px;
   border: solid white;
   border-width: 0 3px 3px 0;
   transform: rotate(45deg);
 }
 
-.custom-checkbox input:checked ~ .checkmark:after {
+.checkbox-input:checked ~ .checkmark:after {
   display: block;
-  animation: checkAnim 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  animation: checkAnim 0.6s ease;
 }
 
 @keyframes checkAnim {
@@ -344,10 +251,6 @@
   transition: all 0.4s ease;
   padding: 5px 0;
   font-weight: 500;
-  position: relative;
-  z-index: 2;
-  font-family: "Poppins", sans-serif;
-  letter-spacing: -0.2px;
 }
 
 .task-item.completed .task-text {
@@ -362,10 +265,9 @@
   border-radius: 12px;
   font-size: 1.25rem;
   background: rgba(255, 255, 255, 0.9);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s ease;
   box-shadow: 0 4px 12px rgba(167, 119, 227, 0.2);
   font-weight: 500;
-  font-family: "Poppins", sans-serif;
 }
 
 .edit-input:focus {
@@ -374,61 +276,24 @@
   transform: translateY(-2px);
 }
 
-/* TLAČÍTKO PRO VYMAZÁNÍ ÚKOLU - VYLEPŠENÝ STYL */
 .delete-button {
   background: none;
   border: none;
   cursor: pointer;
   padding: 10px;
   border-radius: 12px;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s ease;
   color: #ff6b81;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
-  position: relative;
   width: 42px;
   height: 42px;
-}
-
-.delete-button::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 107, 129, 0.15);
-  border-radius: 12px;
-  transform: scale(0);
-  transition: transform 0.3s ease;
-  z-index: -1;
-}
-
-.delete-button:hover::after {
-  transform: scale(1);
 }
 
 .delete-button:hover {
   color: #ff4757;
   transform: rotate(12deg) scale(1.25);
-}
-
-.delete-button:active {
-  transform: scale(0.9) rotate(0deg);
-}
-
-.delete-button svg {
-  width: 22px;
-  height: 22px;
-  transition: all 0.3s ease;
-  stroke-width: 2.5;
-}
-
-.delete-button:hover svg {
-  stroke: #ff4757;
-  transform: scale(1.2);
 }
 
 .empty-state {
@@ -440,8 +305,11 @@
   box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
-.empty-state svg {
-  margin-bottom: 20px;
+.empty-icon {
+  margin: 0 auto 20px;
+  display: block;
+  width: 48px;
+  height: 48px;
   stroke: #a777e3;
   filter: drop-shadow(0 3px 5px rgba(167, 119, 227, 0.2));
 }
@@ -451,13 +319,11 @@
   margin-bottom: 10px;
   font-weight: 600;
   color: #5e35b1;
-  font-family: "Poppins", sans-serif;
 }
 
 .empty-state small {
   font-size: 1rem;
   color: #888;
-  font-family: "Poppins", sans-serif;
 }
 
 .footer {
@@ -471,7 +337,6 @@
   font-size: 1.3rem;
   margin-bottom: 15px;
   font-weight: 600;
-  font-family: "Poppins", sans-serif;
 }
 
 .remaining strong {
@@ -480,7 +345,6 @@
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 2px 4px rgba(110, 142, 251, 0.2);
 }
 
 .progress-bar {
@@ -495,7 +359,7 @@
   height: 100%;
   background: linear-gradient(90deg, #6e8efb, #a777e3);
   border-radius: 10px;
-  transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: width 0.6s ease;
   position: relative;
   overflow: hidden;
 }
@@ -534,7 +398,7 @@
 }
 
 .task-item.deleting {
-  animation: slideOut 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+  animation: slideOut 0.5s ease forwards;
 }
 
 /* Animace pro zaškrtnutí */
@@ -566,17 +430,27 @@
 
   .task-input {
     padding: 15px 20px;
+    font-size: 1rem;
   }
 
   .task-text {
     font-size: 1.1rem;
+  }
+
+  .filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .clear-button {
+    margin-left: 0;
+    margin-top: 10px;
   }
 }
 
 @media (max-width: 480px) {
   .glass-card {
     padding: 20px;
-    border-radius: 20px;
   }
 
   .header {
@@ -592,15 +466,7 @@
     height: 55px;
   }
 
-  .filters {
-    flex-direction: column;
-  }
-
-  .clear-button {
-    margin-left: 0;
-  }
-
   .task-item {
-    padding: 15px 20px;
+    padding: 15px;
   }
 }
