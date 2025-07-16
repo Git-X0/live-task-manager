@@ -14,13 +14,12 @@
     <div class="add-task flex gap-4 mb-8">
       <input
         #newTaskInput
-        [formControl]="newTaskControl"
-        class="task-input flex-1 p-5 rounded-xl bg-white/70 shadow-md text-lg transition-all duration-300 focus:shadow-lg focus:bg-white focus:translate-y-[-2px]"
-        type="text"
-        placeholder="Napiš úkol..."
         [value]="newTask()"
         (input)="newTask.set($any($event.target).value)"
         (keyup.enter)="addTask()"
+        class="task-input flex-1 p-5 rounded-xl bg-white/70 shadow-md text-lg transition-all duration-300 focus:shadow-lg focus:bg-white focus:translate-y-[-2px]"
+        type="text"
+        placeholder="Napiš úkol..."
       />
       <button
         class="add-button bg-gradient-to-br from-[#6e8efb] to-[#a777e3] text-white rounded-xl w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
@@ -86,8 +85,6 @@
           #editInput
           class="edit-input"
           type="text"
-          [value]="editingText()"
-          (input)="editingText.set($any($event.target).value)"
           [value]="editingText()"
           (input)="editingText.set($any($event.target).value)"
           (blur)="saveEdit(task.id)"

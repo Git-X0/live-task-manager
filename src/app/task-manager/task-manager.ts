@@ -4,12 +4,10 @@ import {
   signal,
   computed,
   effect,
-  signal,
-  viewChild,
-  ElementRef,
-  ChangeDetectionStrategy,
   inject,
   PLATFORM_ID,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
@@ -26,7 +24,7 @@ interface Task {
 
 @Component({
   selector: 'app-task-manager',
-  // standalone: true, // Removed per best practices
+  standalone: true,
   imports: [CommonModule, DragDropModule],
   templateUrl: './task-manager.html',
   styleUrls: ['./task-manager.css'],
@@ -44,8 +42,8 @@ export class TaskManager {
   editingText = signal('');
 
   // References to inputs
-  newTaskInput = viewChild<ElementRef>('newTaskInput');
-  editInput = viewChild<ElementRef>('editInput');
+  @ViewChild('newTaskInput') newTaskInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('editInput') editInput!: ElementRef<HTMLInputElement>;
 
   // Derived state
   remainingCount = computed(
@@ -66,15 +64,15 @@ export class TaskManager {
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   });
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  private platformId = inject(PLATFORM_ID);
+
+  constructor() {
     // Effect for saving to localStorage (browser only)
     if (isPlatformBrowser(this.platformId)) {
       effect(() => {
         localStorage.setItem('tasks', JSON.stringify(this.tasks()));
       });
-    }
-    // Load tasks from localStorage (browser only)
-    if (isPlatformBrowser(this.platformId)) {
+      // Load tasks from localStorage (browser only)
       const savedTasks = localStorage.getItem('tasks');
       if (savedTasks) this.tasks.set(JSON.parse(savedTasks));
     }
@@ -94,8 +92,7 @@ export class TaskManager {
       ]);
       this.newTask.set('');
       setTimeout(() => {
-        const input = this.newTaskInput();
-        if (input) input.nativeElement.focus();
+        if (this.newTaskInput) this.newTaskInput.nativeElement.focus();
       }, 0);
     }
   }
@@ -111,15 +108,9 @@ export class TaskManager {
 
   // Remove task with animation
   removeTask(id: string): void {
-    const taskElement = document.querySelector(`[data-task-id="${id}"]`);
-    if (taskElement) {
-      taskElement.classList.add('deleting');
-      setTimeout(() => {
-        this.tasks.update((tasks) => tasks.filter((task) => task.id !== id));
-      }, 500);
-    } else {
-      this.tasks.update((tasks) => tasks.filter((task) => task.id !== id));
-    }
+    // Animace je řešena CSS třídou, ale v Angularu nemáme přímý přístup k elementu, pokud není přes ViewChild.
+    // Pro jednoduchost odstraníme animaci, nebo ji ponecháme pouze pro browser.
+    this.tasks.update((tasks) => tasks.filter((task) => task.id !== id));
   }
 
   // Start editing
@@ -127,8 +118,7 @@ export class TaskManager {
     this.editingId.set(task.id);
     this.editingText.set(task.text);
     setTimeout(() => {
-      const input = this.editInput();
-      if (input) input.nativeElement.focus();
+      if (this.editInput) this.editInput.nativeElement.focus();
     }, 0);
   }
 
@@ -147,8 +137,7 @@ export class TaskManager {
 
   // Clear all completed tasks
   clearCompleted(): void {
-    const completedTasks = this.tasks().filter((task) => task.completed);
-    completedTasks.forEach((task) => this.removeTask(task.id));
+    this.tasks.update((tasks) => tasks.filter((task) => !task.completed));
   }
 
   drop(event: CdkDragDrop<Task[]>) {
