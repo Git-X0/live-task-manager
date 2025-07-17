@@ -589,3 +589,10 @@ body {
     padding: 0.5rem 0.2rem 0.3rem 0.2rem;
   }
 }
+
+.glass-card {
+  min-width: 320px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
