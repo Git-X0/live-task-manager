@@ -58,39 +58,82 @@
         [value]="newCategory()"
         (input)="newCategory.set($any($event.target).value)"
         (keyup.enter)="addCategory()"
+        aria-label="Přidat novou kategorii"
       />
-      <button class="add-button" (click)="addCategory()">+</button>
+      <button
+        class="add-button"
+        (click)="addCategory()"
+        aria-label="Přidat kategorii"
+      >
+        +
+      </button>
     </div>
 
     <div class="add-task">
-      <input
-        #newTaskInput
-        class="task-input"
-        type="text"
-        placeholder="Napiš úkol..."
-        [value]="newTask()"
-        (input)="newTask.set($any($event.target).value)"
-        (keyup.enter)="addTask()"
-      />
+      <div
+        style="
+          position: relative;
+          width: 100%;
+          max-width: 100%;
+          display: flex;
+          align-items: center;
+        "
+      >
+        <input
+          #newTaskInput
+          class="task-input"
+          type="text"
+          placeholder="Napiš úkol..."
+          [value]="newTask()"
+          (input)="newTask.set($any($event.target).value)"
+          (keyup.enter)="addTask()"
+          aria-label="Název nového úkolu"
+          style="width: 100%"
+        />
+        @if (newTask()) {
+        <button
+          type="button"
+          (click)="newTask.set(''); newTaskInput.focus()"
+          aria-label="Vymazat text"
+          style="
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0;
+          "
+          tabindex="0"
+        >
+          ×
+        </button>
+        }
+      </div>
       <input
         class="task-input"
         type="datetime-local"
         [value]="newTaskDeadline()"
         (input)="newTaskDeadline.set($any($event.target).value)"
         style="max-width: 180px"
+        aria-label="Deadline úkolu"
       />
       <select
         class="category-select"
         [value]="selectedTaskCategory() ?? ''"
         (change)="selectedTaskCategory.set($any($event.target).value || null)"
         style="margin-left: 0.5rem"
+        aria-label="Kategorie úkolu"
       >
         <option value="">Bez kategorie</option>
         @for (cat of categories(); track cat) {
         <option [value]="cat">{{cat}}</option>
         }
       </select>
-      <button class="add-button" (click)="addTask()">
+      <button class="add-button" (click)="addTask()" aria-label="Přidat úkol">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -107,18 +150,24 @@
     </div>
 
     <div class="filters">
-      <button [class.active]="filter() === 'all'" (click)="filter.set('all')">
+      <button
+        [class.active]="filter() === 'all'"
+        (click)="filter.set('all')"
+        aria-label="Zobrazit všechny úkoly"
+      >
         Vše
       </button>
       <button
         [class.active]="filter() === 'active'"
         (click)="filter.set('active')"
+        aria-label="Zobrazit aktivní úkoly"
       >
         Aktivní
       </button>
       <button
         [class.active]="filter() === 'completed'"
         (click)="filter.set('completed')"
+        aria-label="Zobrazit splněné úkoly"
       >
         Splněné
       </button>
@@ -127,6 +176,7 @@
         [value]="selectedCategory() ?? ''"
         (change)="selectedCategory.set($any($event.target).value || null)"
         style="margin-left: 0.5rem"
+        aria-label="Filtrovat podle kategorie"
       >
         <option value="">Všechny kategorie</option>
         @for (cat of categories(); track cat) {
@@ -137,13 +187,18 @@
         class="category-select"
         [value]="deadlineFilter()"
         (change)="deadlineFilter.set($any($event.target).value)"
+        aria-label="Filtrovat podle deadlinu"
       >
         <option value="all">Všechny termíny</option>
         <option value="with">Pouze s deadlinem</option>
         <option value="without">Pouze bez deadline</option>
         <option value="soon">Blížící se deadline (&lt;24h)</option>
       </select>
-      <button class="clear-button" (click)="clearCompleted()">
+      <button
+        class="clear-button"
+        (click)="clearCompleted()"
+        aria-label="Smazat splněné úkoly"
+      >
         Smazat splněné
       </button>
     </div>
@@ -162,6 +217,7 @@
             [checked]="task.completed"
             (change)="toggleTask(task.id)"
             class="checkbox-input"
+            aria-label="Označit úkol jako splněný"
           />
           <span class="checkmark"></span>
         </label>
@@ -211,7 +267,11 @@
         </span>
         }
 
-        <button class="delete-button" (click)="removeTask(task.id)">
+        <button
+          class="delete-button"
+          (click)="removeTask(task.id)"
+          aria-label="Smazat úkol"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="22"
@@ -252,14 +312,25 @@
           margin-bottom: 1rem;
         "
       >
-        <button class="utility-button" (click)="exportData()">Export</button>
-        <label class="utility-button" style="cursor: pointer">
+        <button
+          class="utility-button"
+          (click)="exportData()"
+          aria-label="Exportovat úkoly"
+        >
+          Export
+        </button>
+        <label
+          class="utility-button"
+          style="cursor: pointer"
+          aria-label="Importovat úkoly"
+        >
           Import
           <input
             type="file"
             accept="application/json"
             (change)="importData($event)"
             style="display: none"
+            aria-label="Vybrat soubor pro import úkolů"
           />
         </label>
         <span *ngIf="importError()" style="color: #e57373; margin-left: 1rem"
