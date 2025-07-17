@@ -121,8 +121,12 @@ export class TaskManager {
       this.newTask.set('');
       this.selectedTaskCategory.set(null);
       this.newTaskDeadline.set('');
+      // Zavřít klávesnici na mobilech
+      if (window.innerWidth < 700 && this.newTaskInput?.nativeElement) {
+        this.newTaskInput.nativeElement.blur();
+      }
       setTimeout(() => {
-        if (this.newTaskInput?.nativeElement) {
+        if (this.newTaskInput?.nativeElement && window.innerWidth >= 700) {
           this.newTaskInput.nativeElement.focus();
         }
       }, 0);
