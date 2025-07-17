@@ -1,3 +1,6 @@
+<div *ngIf="toastMessage()" class="toast" [ngClass]="toastType()">
+  {{ toastMessage() }}
+</div>
 <div class="container max-w-3xl mx-auto">
   <div
     class="glass-card bg-white/85 backdrop-blur-lg rounded-2xl p-8 shadow-xl border border-white/40"

@@ -28,7 +28,6 @@ interface Task {
 
 @Component({
   selector: 'app-task-manager',
-  standalone: true,
   imports: [CommonModule, DragDropModule],
   templateUrl: './task-manager.html',
   styleUrls: ['./task-manager.css'],
@@ -52,16 +51,17 @@ export class TaskManager {
   newTaskDeadline = signal<string>('');
   deadlineFilter = signal<'all' | 'with' | 'without' | 'soon'>('all');
   importError = signal<string | null>(null);
+  toastMessage = signal<string | null>(null);
+  toastType = signal<'success' | 'error' | null>(null);
+  toastTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  // References to inputs
   @ViewChild('newTaskInput') newTaskInput!: ElementRef<HTMLInputElement>;
   @ViewChild('editInput') editInput!: ElementRef<HTMLInputElement>;
 
-  // Derived state
-  remainingCount = computed(
+  readonly remainingCount = computed(
     () => this.tasks().filter((task) => !task.completed).length
   );
-  filteredTasks = computed<Task[]>(() => {
+  readonly filteredTasks = computed(() => {
     const filter = this.filter();
     const cat = this.selectedCategory();
     const deadlineFilter = this.deadlineFilter();
@@ -77,23 +77,19 @@ export class TaskManager {
           (deadlineFilter === 'soon' && this.isDeadlineSoon(task)))
     );
   });
-  progress = computed(() => {
+  readonly progress = computed(() => {
     const total = this.tasks().length;
     const completed = total - this.remainingCount();
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   });
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    // Effect for saving to localStorage (browser only)
     if (isPlatformBrowser(this.platformId)) {
       effect(() => {
         localStorage.setItem('tasks', JSON.stringify(this.tasks()));
       });
-      // Load tasks from localStorage (browser only)
       const savedTasks = localStorage.getItem('tasks');
       if (savedTasks) this.tasks.set(JSON.parse(savedTasks));
-
-      // Dark mode preference
       const savedTheme = localStorage.getItem('theme');
       if (savedTheme === 'dark' || savedTheme === 'light') {
         this.theme.set(savedTheme);
@@ -106,7 +102,6 @@ export class TaskManager {
     }
   }
 
-  // Add new task
   addTask(): void {
     const taskText = this.newTask().trim();
     const category = this.selectedTaskCategory();
@@ -131,10 +126,10 @@ export class TaskManager {
           this.newTaskInput.nativeElement.focus();
         }
       }, 0);
+      this.showToast('Úkol přidán!', 'success');
     }
   }
 
-  // Toggle task completion
   toggleTask(id: string): void {
     this.tasks.update((tasks) =>
       tasks.map((task) =>
@@ -143,14 +138,11 @@ export class TaskManager {
     );
   }
 
-  // Remove task with animation
   removeTask(id: string): void {
-    // Animace je řešena CSS třídou, ale v Angularu nemáme přímý přístup k elementu, pokud není přes ViewChild.
-    // Pro jednoduchost odstraníme animaci, nebo ji ponecháme pouze pro browser.
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== id));
+    this.showToast('Úkol smazán.', 'success');
   }
 
-  // Start editing
   startEdit(task: Task): void {
     this.editingId.set(task.id);
     this.editingText.set(task.text);
@@ -159,7 +151,6 @@ export class TaskManager {
     }, 0);
   }
 
-  // Save edit
   saveEdit(id: string): void {
     const newText = this.editingText().trim();
     if (newText) {
@@ -168,22 +159,20 @@ export class TaskManager {
           task.id === id ? { ...task, text: newText } : task
         )
       );
+      this.showToast('Úkol upraven.', 'success');
     }
     this.editingId.set(null);
   }
 
-  // Clear all completed tasks
   clearCompleted(): void {
     this.tasks.update((tasks) => tasks.filter((task) => !task.completed));
   }
 
-  drop(event: CdkDragDrop<Task[]>) {
+  drop(event: CdkDragDrop<Task[]>): void {
     const current = this.filteredTasks();
     moveItemInArray(current, event.previousIndex, event.currentIndex);
-    // Změna pořadí v původním poli podle filtrovaného pořadí
     const ids = current.map((t) => t.id);
     this.tasks.update((tasks) => {
-      // zachováme úkoly, které nejsou ve filtru, a přidáme filtrované v novém pořadí
       const filtered = tasks.filter((t) => ids.includes(t.id));
       const rest = tasks.filter((t) => !ids.includes(t.id));
       return [...current, ...rest];
@@ -211,7 +200,7 @@ export class TaskManager {
     if (!task.deadline || task.completed) return false;
     const now = Date.now();
     const deadline = new Date(task.deadline).getTime();
-    return deadline > now && deadline - now <= 24 * 60 * 60 * 1000; // do 24h
+    return deadline > now && deadline - now <= 24 * 60 * 60 * 1000;
   }
 
   exportData(): void {
@@ -246,7 +235,6 @@ export class TaskManager {
         ) {
           throw new Error('Neplatná struktura souboru.');
         }
-        // Validace tasků
         for (const t of data.tasks) {
           if (
             typeof t !== 'object' ||
@@ -257,7 +245,6 @@ export class TaskManager {
             throw new Error('Neplatný úkol v souboru.');
           }
         }
-        // Validace kategorií
         for (const c of data.categories) {
           if (typeof c !== 'string') {
             throw new Error('Neplatná kategorie v souboru.');
@@ -271,8 +258,17 @@ export class TaskManager {
       }
     };
     reader.readAsText(file);
-    // Reset inputu, aby šel znovu vybrat stejný soubor
     input.value = '';
+  }
+
+  showToast(message: string, type: 'success' | 'error' = 'success') {
+    this.toastMessage.set(message);
+    this.toastType.set(type);
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => {
+      this.toastMessage.set(null);
+      this.toastType.set(null);
+    }, 2500);
   }
 
   private setBodyTheme(theme: 'light' | 'dark') {
