@@ -12,6 +12,8 @@
   --button-text: #fff;
   --progress-bg: #e5e7eb;
   --progress: #a777e3;
+  --task-hover-bg: rgba(245, 245, 255, 0.98);
+  --task-hover-text: #222;
 }
 
 /* Dark mode */
@@ -28,6 +30,8 @@
   --button-text: #fff;
   --progress-bg: #23272f;
   --progress: #6e8efb;
+  --task-hover-bg: #3a3f4b;
+  --task-hover-text: #f3f3f3;
 }
 
 body {
@@ -207,7 +211,8 @@ body {
 }
 .task-item:hover {
   box-shadow: 0 6px 24px 0 rgba(110, 142, 251, 0.13);
-  background: rgba(245, 245, 255, 0.98);
+  background: var(--task-hover-bg);
+  color: var(--task-hover-text);
 }
 
 .empty-state {

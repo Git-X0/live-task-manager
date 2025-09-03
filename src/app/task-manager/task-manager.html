@@ -50,26 +50,24 @@
       ></span>
     </h2>
 
-    <div class="category-manager">
+    <form [formGroup]="categoryForm" (ngSubmit)="addCategory()" class="category-manager">
       <input
         class="category-input task-input"
         type="text"
         placeholder="Nová kategorie..."
-        [value]="newCategory()"
-        (input)="newCategory.set($any($event.target).value)"
-        (keyup.enter)="addCategory()"
+        formControlName="name"
         aria-label="Přidat novou kategorii"
       />
       <button
         class="add-button"
-        (click)="addCategory()"
+        type="submit"
         aria-label="Přidat kategorii"
       >
         +
       </button>
-    </div>
+    </form>
 
-    <div class="add-task">
+    <form [formGroup]="taskForm" (ngSubmit)="addTask()" class="add-task">
       <div
         style="
           position: relative;
@@ -84,16 +82,14 @@
           class="task-input"
           type="text"
           placeholder="Napiš úkol..."
-          [value]="newTask()"
-          (input)="newTask.set($any($event.target).value)"
-          (keyup.enter)="addTask()"
+          formControlName="text"
           aria-label="Název nového úkolu"
           style="width: 100%"
         />
-        @if (newTask()) {
+        @if (taskForm.get('text')?.value) {
         <button
           type="button"
-          (click)="newTask.set(''); newTaskInput.focus()"
+          (click)="taskForm.get('text')?.reset(); newTaskInput.focus()"
           aria-label="Vymazat text"
           style="
             position: absolute;
@@ -116,24 +112,22 @@
       <input
         class="task-input"
         type="datetime-local"
-        [value]="newTaskDeadline()"
-        (input)="newTaskDeadline.set($any($event.target).value)"
+        formControlName="deadline"
         style="max-width: 180px"
         aria-label="Deadline úkolu"
       />
       <select
         class="category-select"
-        [value]="selectedTaskCategory() ?? ''"
-        (change)="selectedTaskCategory.set($any($event.target).value || null)"
+        formControlName="category"
         style="margin-left: 0.5rem"
         aria-label="Kategorie úkolu"
       >
-        <option value="">Bez kategorie</option>
+        <option [ngValue]="null">Bez kategorie</option>
         @for (cat of categories(); track cat) {
         <option [value]="cat">{{cat}}</option>
         }
       </select>
-      <button class="add-button" (click)="addTask()" aria-label="Přidat úkol">
+      <button class="add-button" type="submit" aria-label="Přidat úkol">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -147,7 +141,7 @@
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
       </button>
-    </div>
+    </form>
 
     <div class="filters">
       <button

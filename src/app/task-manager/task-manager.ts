@@ -9,6 +9,7 @@ import {
   ViewChild,
   ElementRef,
   Inject,
+  OnInit,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
@@ -16,6 +17,15 @@ import {
   CdkDragDrop,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
+import {
+  ReactiveFormsModule,
+  FormGroup,
+  FormBuilder,
+  Validators,
+  ValidatorFn,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 
 interface Task {
   id: string;
@@ -28,7 +38,7 @@ interface Task {
 
 @Component({
   selector: 'app-task-manager',
-  imports: [CommonModule, DragDropModule],
+  imports: [CommonModule, DragDropModule, ReactiveFormsModule],
   templateUrl: './task-manager.html',
   styleUrls: ['./task-manager.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,19 +46,19 @@ interface Task {
     class: 'task-manager-root',
   },
 })
-export class TaskManager {
+export class TaskManager implements OnInit {
+  // Forms
+  taskForm!: FormGroup;
+  categoryForm!: FormGroup;
+
   // Signals for state management
   tasks = signal<Task[]>([]);
   filter = signal<'all' | 'active' | 'completed'>('all');
-  newTask = signal('');
   editingId = signal<string | null>(null);
   editingText = signal('');
   theme = signal<'light' | 'dark'>('light');
   categories = signal<string[]>([]);
-  newCategory = signal('');
-  selectedCategory = signal<string | null>(null); // pro filtraci
-  selectedTaskCategory = signal<string | null>(null); // pro nový úkol
-  newTaskDeadline = signal<string>('');
+  selectedCategory = signal<string | null>(null); // for filtering
   deadlineFilter = signal<'all' | 'with' | 'without' | 'soon'>('all');
   importError = signal<string | null>(null);
   toastMessage = signal<string | null>(null);
@@ -83,7 +93,10 @@ export class TaskManager {
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   });
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private fb: FormBuilder
+  ) {
     if (isPlatformBrowser(this.platformId)) {
       effect(() => {
         localStorage.setItem('tasks', JSON.stringify(this.tasks()));
@@ -102,39 +115,79 @@ export class TaskManager {
     }
   }
 
-  addTask(): void {
-    const taskText = this.newTask().trim();
-    const category = this.selectedTaskCategory();
-    const deadline = this.newTaskDeadline().trim();
-    if (taskText) {
-      this.tasks.update((tasks) => [
-        ...tasks,
-        {
-          id: Date.now().toString(),
-          text: taskText,
-          completed: false,
-          ...(category ? { category } : {}),
-          createdAt: new Date().toISOString(),
-          ...(deadline ? { deadline } : {}),
-        },
-      ]);
-      this.newTask.set('');
-      this.selectedTaskCategory.set(null);
-      this.newTaskDeadline.set('');
-      // Zavřít klávesnici na mobilech
-      if (window.innerWidth < 700 && this.newTaskInput?.nativeElement) {
-        this.newTaskInput.nativeElement.blur();
-      }
-      setTimeout(() => {
-        if (this.newTaskInput?.nativeElement && window.innerWidth >= 700) {
-          this.newTaskInput.nativeElement.focus();
-        }
-      }, 0);
-      this.showToast('Úkol přidán!', 'success');
-    }
+  ngOnInit(): void {
+    this.taskForm = this.fb.group({
+      text: ['', [Validators.required, Validators.maxLength(100)]],
+      category: [null],
+      deadline: ['', [this.deadlineNotInPastValidator()]],
+    });
+
+    this.categoryForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(20)]],
+    });
   }
 
-  toggleTask(id: string): void {
+  deadlineNotInPastValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) {
+        return null; // No deadline, valid
+      }
+      const deadlineTime = new Date(control.value).getTime();
+      const now = Date.now();
+      return deadlineTime < now ? { deadlineInPast: true } : null;
+    };
+  }
+
+  addTask() {
+    if (this.tasks().length >= 500) {
+      this.showToast('Nelze přidat více než 500 úkolů.', 'error');
+      return;
+    }
+
+    this.taskForm.markAllAsTouched();
+    if (this.taskForm.invalid) {
+      const textErrors = this.taskForm.get('text')?.errors;
+      if (textErrors?.['required']) {
+        this.showToast('Úkol nemůže být prázdný.', 'error');
+      } else if (textErrors?.['maxlength']) {
+        this.showToast('Úkol musí mít méně než 100 znaků.', 'error');
+      }
+      const deadlineErrors = this.taskForm.get('deadline')?.errors;
+      if (deadlineErrors?.['deadlineInPast']) {
+        this.showToast('Termín úkolu nemůže být v minulosti.', 'error');
+      }
+
+      return;
+    }
+
+    const { text, category, deadline } = this.taskForm.value;
+
+    this.tasks.update((tasks) => [
+      ...tasks,
+      {
+        id: Date.now().toString(),
+        text: text.trim(),
+        completed: false,
+        ...(category ? { category } : {}),
+        createdAt: new Date().toISOString(),
+        ...(deadline ? { deadline } : {}),
+      },
+    ]);
+
+    this.taskForm.reset();
+    // Zavřít klávesnici na mobilech
+    if (window.innerWidth < 700 && this.newTaskInput?.nativeElement) {
+      this.newTaskInput.nativeElement.blur();
+    }
+    setTimeout(() => {
+      if (this.newTaskInput?.nativeElement && window.innerWidth >= 700) {
+        this.newTaskInput.nativeElement.focus();
+      }
+    }, 0);
+    this.showToast('Úkol přidán!', 'success');
+  }
+
+  toggleTask(id: string) {
     this.tasks.update((tasks) =>
       tasks.map((task) =>
         task.id === id ? { ...task, completed: !task.completed } : task
@@ -142,12 +195,12 @@ export class TaskManager {
     );
   }
 
-  removeTask(id: string): void {
+  removeTask(id: string) {
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== id));
     this.showToast('Úkol smazán.', 'success');
   }
 
-  startEdit(task: Task): void {
+  startEdit(task: Task) {
     this.editingId.set(task.id);
     this.editingText.set(task.text);
     setTimeout(() => {
@@ -155,8 +208,12 @@ export class TaskManager {
     }, 0);
   }
 
-  saveEdit(id: string): void {
+  saveEdit(id: string) {
     const newText = this.editingText().trim();
+    if (newText.length > 100) {
+      this.showToast('Úkol musí mít méně než 100 znaků.', 'error');
+      return;
+    }
     if (newText) {
       this.tasks.update((tasks) =>
         tasks.map((task) =>
@@ -168,11 +225,11 @@ export class TaskManager {
     this.editingId.set(null);
   }
 
-  clearCompleted(): void {
+  clearCompleted() {
     this.tasks.update((tasks) => tasks.filter((task) => !task.completed));
   }
 
-  drop(event: CdkDragDrop<Task[]>): void {
+  drop(event: CdkDragDrop<Task[]>) {
     const current = this.filteredTasks();
     moveItemInArray(current, event.previousIndex, event.currentIndex);
     const ids = current.map((t) => t.id);
@@ -183,16 +240,35 @@ export class TaskManager {
     });
   }
 
-  toggleTheme(): void {
+  toggleTheme() {
     this.theme.update((t) => (t === 'light' ? 'dark' : 'light'));
   }
 
-  addCategory(): void {
-    const cat = this.newCategory().trim();
-    if (cat && !this.categories().includes(cat)) {
-      this.categories.update((cats) => [...cats, cat]);
-      this.newCategory.set('');
+  addCategory() {
+    if (this.categories().length >= 20) {
+      this.showToast('Nelze přidat více než 20 kategorií.', 'error');
+      return;
     }
+
+    this.categoryForm.markAllAsTouched();
+    if (this.categoryForm.invalid) {
+      const errors = this.categoryForm.get('name')?.errors;
+      if (errors?.['required']) {
+        this.showToast('Kategorie nemůže být prázdná.', 'error');
+      } else if (errors?.['maxlength']) {
+        this.showToast('Kategorie musí mít méně než 20 znaků.', 'error');
+      }
+      return;
+    }
+
+    const cat = this.categoryForm.value.name.trim();
+    if (this.categories().includes(cat)) {
+      this.showToast('Kategorie již existuje.', 'error');
+      return;
+    }
+
+    this.categories.update((cats) => [...cats, cat]);
+    this.categoryForm.reset();
   }
 
   isDeadlineOver(task: Task): boolean {
@@ -207,7 +283,7 @@ export class TaskManager {
     return deadline > now && deadline - now <= 24 * 60 * 60 * 1000;
   }
 
-  exportData(): void {
+  exportData() {
     const data = {
       tasks: this.tasks(),
       categories: this.categories(),
@@ -223,7 +299,7 @@ export class TaskManager {
     URL.revokeObjectURL(url);
   }
 
-  importData(event: Event): void {
+  importData(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
