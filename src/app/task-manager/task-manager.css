@@ -76,3 +76,8 @@
 .task-item.completed {
   animation: pulse 0.5s ease;
 }
+
+.category-manager {
+  margin-bottom: 1.5rem; /* Adds space below the category form */
+}
+

@@ -8,7 +8,6 @@ import {
   PLATFORM_ID,
   ViewChild,
   ElementRef,
-  Inject,
   OnInit,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -38,6 +37,7 @@ interface Task {
 
 @Component({
   selector: 'app-task-manager',
+  standalone: true,
   imports: [CommonModule, DragDropModule, ReactiveFormsModule],
   templateUrl: './task-manager.html',
   styleUrls: ['./task-manager.css'],
@@ -93,10 +93,10 @@ export class TaskManager implements OnInit {
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   });
 
-  constructor(
-    @Inject(PLATFORM_ID) private platformId: Object,
-    private fb: FormBuilder
-  ) {
+  private platformId = inject(PLATFORM_ID);
+  private fb = inject(FormBuilder);
+
+  constructor() {
     if (isPlatformBrowser(this.platformId)) {
       effect(() => {
         localStorage.setItem('tasks', JSON.stringify(this.tasks()));
@@ -140,7 +140,7 @@ export class TaskManager implements OnInit {
 
   addTask() {
     if (this.tasks().length >= 500) {
-      this.showToast('Nelze přidat více než 500 úkolů.', 'error');
+      this.showToast('Cannot add more than 500 tasks.', 'error');
       return;
     }
 
@@ -148,13 +148,13 @@ export class TaskManager implements OnInit {
     if (this.taskForm.invalid) {
       const textErrors = this.taskForm.get('text')?.errors;
       if (textErrors?.['required']) {
-        this.showToast('Úkol nemůže být prázdný.', 'error');
+        this.showToast('Task cannot be empty.', 'error');
       } else if (textErrors?.['maxlength']) {
-        this.showToast('Úkol musí mít méně než 100 znaků.', 'error');
+        this.showToast('Task must have less than 100 characters.', 'error');
       }
       const deadlineErrors = this.taskForm.get('deadline')?.errors;
       if (deadlineErrors?.['deadlineInPast']) {
-        this.showToast('Termín úkolu nemůže být v minulosti.', 'error');
+        this.showToast('Task deadline cannot be in the past.', 'error');
       }
 
       return;
@@ -175,7 +175,7 @@ export class TaskManager implements OnInit {
     ]);
 
     this.taskForm.reset();
-    // Zavřít klávesnici na mobilech
+    // Close keyboard on mobile
     if (window.innerWidth < 700 && this.newTaskInput?.nativeElement) {
       this.newTaskInput.nativeElement.blur();
     }
@@ -184,7 +184,7 @@ export class TaskManager implements OnInit {
         this.newTaskInput.nativeElement.focus();
       }
     }, 0);
-    this.showToast('Úkol přidán!', 'success');
+    this.showToast('Task added!', 'success');
   }
 
   toggleTask(id: string) {
@@ -197,7 +197,7 @@ export class TaskManager implements OnInit {
 
   removeTask(id: string) {
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== id));
-    this.showToast('Úkol smazán.', 'success');
+    this.showToast('Task deleted.', 'success');
   }
 
   startEdit(task: Task) {
@@ -211,7 +211,7 @@ export class TaskManager implements OnInit {
   saveEdit(id: string) {
     const newText = this.editingText().trim();
     if (newText.length > 100) {
-      this.showToast('Úkol musí mít méně než 100 znaků.', 'error');
+      this.showToast('Task must have less than 100 characters.', 'error');
       return;
     }
     if (newText) {
@@ -220,7 +220,7 @@ export class TaskManager implements OnInit {
           task.id === id ? { ...task, text: newText } : task
         )
       );
-      this.showToast('Úkol upraven.', 'success');
+      this.showToast('Task updated.', 'success');
     }
     this.editingId.set(null);
   }
@@ -246,7 +246,7 @@ export class TaskManager implements OnInit {
 
   addCategory() {
     if (this.categories().length >= 20) {
-      this.showToast('Nelze přidat více než 20 kategorií.', 'error');
+      this.showToast('Cannot add more than 20 categories.', 'error');
       return;
     }
 
@@ -254,16 +254,16 @@ export class TaskManager implements OnInit {
     if (this.categoryForm.invalid) {
       const errors = this.categoryForm.get('name')?.errors;
       if (errors?.['required']) {
-        this.showToast('Kategorie nemůže být prázdná.', 'error');
+        this.showToast('Category cannot be empty.', 'error');
       } else if (errors?.['maxlength']) {
-        this.showToast('Kategorie musí mít méně než 20 znaků.', 'error');
+        this.showToast('Category must have less than 20 characters.', 'error');
       }
       return;
     }
 
     const cat = this.categoryForm.value.name.trim();
     if (this.categories().includes(cat)) {
-      this.showToast('Kategorie již existuje.', 'error');
+      this.showToast('Category already exists.', 'error');
       return;
     }
 
@@ -313,7 +313,7 @@ export class TaskManager implements OnInit {
           !Array.isArray(data.tasks) ||
           !Array.isArray(data.categories)
         ) {
-          throw new Error('Neplatná struktura souboru.');
+          throw new Error('Invalid file structure.');
         }
         for (const t of data.tasks) {
           if (
@@ -322,19 +322,19 @@ export class TaskManager implements OnInit {
             typeof t.text !== 'string' ||
             typeof t.completed !== 'boolean'
           ) {
-            throw new Error('Neplatný úkol v souboru.');
+            throw new Error('Invalid task in file.');
           }
         }
         for (const c of data.categories) {
           if (typeof c !== 'string') {
-            throw new Error('Neplatná kategorie v souboru.');
+            throw new Error('Invalid category in file.');
           }
         }
         this.tasks.set(data.tasks);
         this.categories.set(data.categories);
         this.importError.set(null);
       } catch (e) {
-        this.importError.set((e as Error).message || 'Chyba při importu.');
+        this.importError.set((e as Error).message || 'Import error.');
       }
     };
     reader.readAsText(file);

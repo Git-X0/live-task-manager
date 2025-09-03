@@ -1,4 +1,4 @@
-<div *ngIf="toastMessage()" class="toast" [ngClass]="toastType()">
+<div *ngIf="toastMessage()" class="toast" [class]="toastType()">
   {{ toastMessage() }}
 </div>
 <div class="container max-w-3xl mx-auto">
@@ -8,11 +8,11 @@
     <h2
       class="header text-center mb-8 text-[#5e35b1] font-bold text-3xl relative pb-3"
     >
-      Můj Task Manager ✨
+      My Task Manager ✨
       <button
         class="theme-toggle"
         (click)="toggleTheme()"
-        [attr.aria-label]="theme() === 'dark' ? 'Přepnout na světlý režim' : 'Přepnout na tmavý režim'"
+        [attr.aria-label]="theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
       >
         <svg
           *ngIf="theme() === 'dark'"
@@ -50,20 +50,20 @@
       ></span>
     </h2>
 
-    <form [formGroup]="categoryForm" (ngSubmit)="addCategory()" class="category-manager">
+    <form
+      [formGroup]="categoryForm"
+      (ngSubmit)="addCategory()"
+      class="category-manager"
+    >
       <input
         class="category-input task-input"
         type="text"
-        placeholder="Nová kategorie..."
+        placeholder="New category..."
         formControlName="name"
-        aria-label="Přidat novou kategorii"
+        aria-label="Add new category"
       />
-      <button
-        class="add-button"
-        type="submit"
-        aria-label="Přidat kategorii"
-      >
-        +
+      <button class="add-button" type="submit" aria-label="Add category">
+        Add category
       </button>
     </form>
 
@@ -81,16 +81,16 @@
           #newTaskInput
           class="task-input"
           type="text"
-          placeholder="Napiš úkol..."
+          placeholder="Write a task..."
           formControlName="text"
-          aria-label="Název nového úkolu"
+          aria-label="New task name"
           style="width: 100%"
         />
         @if (taskForm.get('text')?.value) {
         <button
           type="button"
           (click)="taskForm.get('text')?.reset(); newTaskInput.focus()"
-          aria-label="Vymazat text"
+          aria-label="Clear text"
           style="
             position: absolute;
             right: 0.5rem;
@@ -114,20 +114,20 @@
         type="datetime-local"
         formControlName="deadline"
         style="max-width: 180px"
-        aria-label="Deadline úkolu"
+        aria-label="Task deadline"
       />
       <select
         class="category-select"
         formControlName="category"
         style="margin-left: 0.5rem"
-        aria-label="Kategorie úkolu"
+        aria-label="Task category"
       >
-        <option [ngValue]="null">Bez kategorie</option>
+        <option [ngValue]="null">No category</option>
         @for (cat of categories(); track cat) {
         <option [value]="cat">{{cat}}</option>
         }
       </select>
-      <button class="add-button" type="submit" aria-label="Přidat úkol">
+      <button class="add-button" type="submit" aria-label="Add task">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -147,32 +147,32 @@
       <button
         [class.active]="filter() === 'all'"
         (click)="filter.set('all')"
-        aria-label="Zobrazit všechny úkoly"
+        aria-label="Show all tasks"
       >
-        Vše
+        All
       </button>
       <button
         [class.active]="filter() === 'active'"
         (click)="filter.set('active')"
-        aria-label="Zobrazit aktivní úkoly"
+        aria-label="Show active tasks"
       >
-        Aktivní
+        Active
       </button>
       <button
         [class.active]="filter() === 'completed'"
         (click)="filter.set('completed')"
-        aria-label="Zobrazit splněné úkoly"
+        aria-label="Show completed tasks"
       >
-        Splněné
+        Completed
       </button>
       <select
         class="category-select"
         [value]="selectedCategory() ?? ''"
         (change)="selectedCategory.set($any($event.target).value || null)"
         style="margin-left: 0.5rem"
-        aria-label="Filtrovat podle kategorie"
+        aria-label="Filter by category"
       >
-        <option value="">Všechny kategorie</option>
+        <option value="">All categories</option>
         @for (cat of categories(); track cat) {
         <option [value]="cat">{{cat}}</option>
         }
@@ -181,19 +181,19 @@
         class="category-select"
         [value]="deadlineFilter()"
         (change)="deadlineFilter.set($any($event.target).value)"
-        aria-label="Filtrovat podle deadlinu"
+        aria-label="Filter by deadline"
       >
-        <option value="all">Všechny termíny</option>
-        <option value="with">Pouze s deadlinem</option>
-        <option value="without">Pouze bez deadline</option>
-        <option value="soon">Blížící se deadline (&lt;24h)</option>
+        <option value="all">All deadlines</option>
+        <option value="with">Only with deadline</option>
+        <option value="without">Only without deadline</option>
+        <option value="soon">Approaching deadline (<24h)</option>
       </select>
       <button
         class="clear-button"
         (click)="clearCompleted()"
-        aria-label="Smazat splněné úkoly"
+        aria-label="Delete completed tasks"
       >
-        Smazat splněné
+        Erase completed
       </button>
     </div>
 
@@ -211,7 +211,7 @@
             [checked]="task.completed"
             (change)="toggleTask(task.id)"
             class="checkbox-input"
-            aria-label="Označit úkol jako splněný"
+            aria-label="Mark task as completed"
           />
           <span class="checkmark"></span>
         </label>
@@ -264,7 +264,7 @@
         <button
           class="delete-button"
           (click)="removeTask(task.id)"
-          aria-label="Smazat úkol"
+          aria-label="Delete task"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -291,8 +291,8 @@
           <line x1="12" y1="8" x2="12" y2="12"></line>
           <line x1="12" y1="16" x2="12.01" y2="16"></line>
         </svg>
-        <p>Žádné úkoly k zobrazení</p>
-        <small>Začněte přidáním nového úkolu</small>
+        <p>No tasks to display</p>
+        <small>Start by adding a new task</small>
       </li>
       }
     </ul>
@@ -324,7 +324,7 @@
             accept="application/json"
             (change)="importData($event)"
             style="display: none"
-            aria-label="Vybrat soubor pro import úkolů"
+            aria-label="Select file for task import"
           />
         </label>
         <span *ngIf="importError()" style="color: #e57373; margin-left: 1rem"
@@ -334,12 +334,12 @@
       <p
         class="remaining text-center text-[#5e35b1] text-xl font-semibold mb-4"
       >
-        Zbývá:
+        Remaining:
         <strong
           class="font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#6e8efb] to-[#a777e3]"
           >{{ remainingCount() }}</strong
         >
-        úkolů
+        tasks
       </p>
       <div
         class="progress-bar h-3 bg-black/5 rounded-xl overflow-hidden shadow-inner"
