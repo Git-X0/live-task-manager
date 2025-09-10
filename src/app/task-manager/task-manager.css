@@ -94,4 +94,147 @@
   margin-left: 1rem; /* Align with padding of fieldset */
 }
 
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+/* Animace a unikátní styly pro Task Manager */
+
+.header::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, #6e8efb, #a777e3);
+  border-radius: 2px;
+}
+
+.task-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(to bottom, #6e8efb, #a777e3);
+  transition: width 0.3s ease;
+}
+
+.task-item:hover::before {
+  width: 8px;
+}
+
+@keyframes checkAnim {
+  0% {
+    transform: scale(0) rotate(45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(45deg);
+  }
+}
+
+@keyframes progressShine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideOut {
+  to {
+    opacity: 0;
+    transform: translateX(100px) rotate(10deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.task-item.deleting {
+  animation: slideOut 0.5s ease forwards;
+}
+
+.task-item.completed {
+  animation: pulse 0.5s ease;
+}
+
+/* Styling for Fieldset and Legend */
+.form-fieldset {
+  border: 2px solid var(--header);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-legend {
+  font-size: 1.2em;
+  font-weight: 600;
+  color: var(--header);
+  padding: 0 0.5rem;
+  margin-left: 1rem; /* Align with padding of fieldset */
+}
+
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: var(--task-active);
+  box-shadow: 0 2px 8px 0 rgba(31, 38, 135, 0.05);
+  margin-bottom: 0.5rem;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.category-item:hover {
+  background: var(--task-hover-bg);
+  box-shadow: 0 4px 12px 0 rgba(31, 38, 135, 0.1);
+}
+
+.category-item span {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+
+.category-item:hover {
+  background: var(--task-hover-bg);
+  box-shadow: 0 4px 12px 0 rgba(31, 38, 135, 0.1);
+}
+
+.category-item span {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
 

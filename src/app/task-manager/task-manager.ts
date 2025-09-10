@@ -123,7 +123,7 @@ export class TaskManager implements OnInit {
     });
 
     this.categoryForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(20)]],
+      name: ['', [Validators.required, Validators.maxLength(100)]],
     });
   }
 
@@ -269,6 +269,20 @@ export class TaskManager implements OnInit {
 
     this.categories.update((cats) => [...cats, cat]);
     this.categoryForm.reset();
+  }
+
+  removeCategory(category: string) {
+    this.categories.update((cats) => cats.filter((c) => c !== category));
+    this.tasks.update((tasks) =>
+      tasks.map((task) => {
+        if (task.category === category) {
+          const { category, ...rest } = task;
+          return rest;
+        }
+        return task;
+      })
+    );
+    this.showToast(`Category "${category}" deleted.`, 'success');
   }
 
   isDeadlineOver(task: Task): boolean {

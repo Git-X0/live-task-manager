@@ -51,7 +51,7 @@
     </h2>
 
     <fieldset class="form-fieldset">
-      <legend class="form-legend">Create Category</legend>
+      <legend class="form-legend">Manage Categories</legend>
       <form
         [formGroup]="categoryForm"
         (ngSubmit)="addCategory()"
@@ -63,15 +63,45 @@
           placeholder="New category..."
           formControlName="name"
           aria-label="Add new category"
+          [title]="categoryForm.get('name')?.value"
         />
-        <button class="add-button" type="submit" aria-label="Add category">
-          Add category
+        <button class="add-button" type="submit" aria-label="Create category">
+          Create category
         </button>
       </form>
+      <ul class="category-list">
+        @for (cat of categories(); track cat) {
+        <li class="category-item">
+          <span>{{cat}}</span>
+          <button
+            class="delete-button"
+            (click)="removeCategory(cat)"
+            [attr.aria-label]="'Delete category ' + cat"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path
+                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+              ></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </button>
+        </li>
+        }
+      </ul>
     </fieldset>
 
     <fieldset class="form-fieldset">
-      <legend class="form-legend">Create Task</legend>
+      <legend class="form-legend">Add Task</legend>
       <form [formGroup]="taskForm" (ngSubmit)="addTask()" class="add-task">
         <div
           style="
@@ -90,6 +120,7 @@
             formControlName="text"
             aria-label="New task name"
             style="width: 100%"
+            [title]="taskForm.get('text')?.value"
           />
           @if (taskForm.get('text')?.value) {
           <button
@@ -118,13 +149,13 @@
           class="task-input"
           type="datetime-local"
           formControlName="deadline"
-          style="max-width: 180px"
+          style="max-width: 30%"
           aria-label="Task deadline"
         />
         <select
           class="category-select"
           formControlName="category"
-          style="margin-left: 0.5rem"
+          style="margin-left: 0.5rem; max-width: 30%"
           aria-label="Task category"
         >
           <option [ngValue]="null">No category</option>
@@ -133,18 +164,7 @@
           }
         </select>
         <button class="add-button" type="submit" aria-label="Add task">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-          >
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
+          Add Task
         </button>
       </form>
     </fieldset>
@@ -231,6 +251,7 @@
           (input)="editingText.set($any($event.target).value)"
           (blur)="saveEdit(task.id)"
           (keyup.enter)="saveEdit(task.id)"
+          [title]="editingText()"
           autofocus
         />
         } @else {
