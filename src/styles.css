@@ -168,9 +168,9 @@ body {
 }
 .add-button:hover,
 .utility-button:hover {
-  background: linear-gradient(135deg, var(--progress), var(--button-bg));
   box-shadow: 0 4px 16px 0 rgba(110, 142, 251, 0.18);
-  transform: translateY(-2px) scale(1.04);
+  transform: translateY(-2px);
+  filter: brightness(1.15);
 }
 
 .task-input,

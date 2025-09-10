@@ -77,7 +77,21 @@
   animation: pulse 0.5s ease;
 }
 
-.category-manager {
-  margin-bottom: 1.5rem; /* Adds space below the category form */
+/* Styling for Fieldset and Legend */
+.form-fieldset {
+  border: 2px solid var(--header);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: border-color 0.3s ease;
 }
+
+.form-legend {
+  font-size: 1.2em;
+  font-weight: 600;
+  color: var(--header);
+  padding: 0 0.5rem;
+  margin-left: 1rem; /* Align with padding of fieldset */
+}
+
 

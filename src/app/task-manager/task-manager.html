@@ -50,98 +50,104 @@
       ></span>
     </h2>
 
-    <form
-      [formGroup]="categoryForm"
-      (ngSubmit)="addCategory()"
-      class="category-manager"
-    >
-      <input
-        class="category-input task-input"
-        type="text"
-        placeholder="New category..."
-        formControlName="name"
-        aria-label="Add new category"
-      />
-      <button class="add-button" type="submit" aria-label="Add category">
-        Add category
-      </button>
-    </form>
-
-    <form [formGroup]="taskForm" (ngSubmit)="addTask()" class="add-task">
-      <div
-        style="
-          position: relative;
-          width: 100%;
-          max-width: 100%;
-          display: flex;
-          align-items: center;
-        "
+    <fieldset class="form-fieldset">
+      <legend class="form-legend">Create Category</legend>
+      <form
+        [formGroup]="categoryForm"
+        (ngSubmit)="addCategory()"
+        class="category-manager"
       >
         <input
-          #newTaskInput
-          class="task-input"
+          class="category-input task-input"
           type="text"
-          placeholder="Write a task..."
-          formControlName="text"
-          aria-label="New task name"
-          style="width: 100%"
+          placeholder="New category..."
+          formControlName="name"
+          aria-label="Add new category"
         />
-        @if (taskForm.get('text')?.value) {
-        <button
-          type="button"
-          (click)="taskForm.get('text')?.reset(); newTaskInput.focus()"
-          aria-label="Clear text"
-          style="
-            position: absolute;
-            right: 0.5rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0;
-          "
-          tabindex="0"
-        >
-          ×
+        <button class="add-button" type="submit" aria-label="Add category">
+          Add category
         </button>
-        }
-      </div>
-      <input
-        class="task-input"
-        type="datetime-local"
-        formControlName="deadline"
-        style="max-width: 180px"
-        aria-label="Task deadline"
-      />
-      <select
-        class="category-select"
-        formControlName="category"
-        style="margin-left: 0.5rem"
-        aria-label="Task category"
-      >
-        <option [ngValue]="null">No category</option>
-        @for (cat of categories(); track cat) {
-        <option [value]="cat">{{cat}}</option>
-        }
-      </select>
-      <button class="add-button" type="submit" aria-label="Add task">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="3"
+      </form>
+    </fieldset>
+
+    <fieldset class="form-fieldset">
+      <legend class="form-legend">Create Task</legend>
+      <form [formGroup]="taskForm" (ngSubmit)="addTask()" class="add-task">
+        <div
+          style="
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+          "
         >
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </button>
-    </form>
+          <input
+            #newTaskInput
+            class="task-input"
+            type="text"
+            placeholder="Write a task..."
+            formControlName="text"
+            aria-label="New task name"
+            style="width: 100%"
+          />
+          @if (taskForm.get('text')?.value) {
+          <button
+            type="button"
+            (click)="taskForm.get('text')?.reset(); newTaskInput.focus()"
+            aria-label="Clear text"
+            style="
+              position: absolute;
+              right: 0.5rem;
+              top: 50%;
+              transform: translateY(-50%);
+              background: none;
+              border: none;
+              color: #888;
+              font-size: 1.2rem;
+              cursor: pointer;
+              padding: 0;
+            "
+            tabindex="0"
+          >
+            ×
+          </button>
+          }
+        </div>
+        <input
+          class="task-input"
+          type="datetime-local"
+          formControlName="deadline"
+          style="max-width: 180px"
+          aria-label="Task deadline"
+        />
+        <select
+          class="category-select"
+          formControlName="category"
+          style="margin-left: 0.5rem"
+          aria-label="Task category"
+        >
+          <option [ngValue]="null">No category</option>
+          @for (cat of categories(); track cat) {
+          <option [value]="cat">{{cat}}</option>
+          }
+        </select>
+        <button class="add-button" type="submit" aria-label="Add task">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </form>
+    </fieldset>
 
     <div class="filters">
       <button
@@ -189,7 +195,7 @@
         <option value="soon">Approaching deadline (<24h)</option>
       </select>
       <button
-        class="clear-button"
+        class="utility-button"
         (click)="clearCompleted()"
         aria-label="Delete completed tasks"
       >
